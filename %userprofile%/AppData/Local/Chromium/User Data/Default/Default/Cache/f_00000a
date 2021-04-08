@@ -1,0 +1,1726 @@
+﻿/// <reference path="default.aspx" />
+
+var dragging = false;
+var img_win;
+var lnk_win;
+var file_win;
+var colist_win;
+var coinfo_win;
+var approval_win;
+var aplist_win;
+var editcol_win;
+var linkview_win;
+var maillist_win;
+var mailset_win;
+var option_win;
+var revhist_win;
+var searchItem_win;
+var selectAttr_win;
+var setcondition_win;
+var permission_win;
+var exportcsv_win;
+var help_win;
+var workcaller;
+var g_mainwidth=512;
+var g_viewmode;
+var g_activepath="";
+var g_currentpath="";
+var g_searching = false;
+var g_keepconditionpane = false;
+var g_showcondition = true;
+var g_pc;
+var g_entryform = "entry.aspx";
+var g_cbsetting = "";
+var m_w = new Array();
+var m_cond = "";
+var mFolderPopupOpen = false;
+var mFilePopupOpen = false;
+var mBomPopupOpen = false;
+var m_DeleteCDDone = false;
+var m_isGUIEditMode = false;
+var m_socket = null;
+
+
+function HideMenu(itemId)
+{
+}
+function AddWindow(w, name)
+{
+	m_w[name] = w;
+}
+function GetWindow(name)
+{
+	return m_w[name];
+}
+function GetWinArray()
+{
+	return m_w;
+}
+function SetSearchCondition(message)
+{
+    m_cond = message;
+}
+function UpdateSearchCondition()
+{
+    if (m_cond.length == 0) {
+        var f = window.frames["contents"];
+        var w = window.frames["main"];
+        w.$('#mes').text('').hide();
+        w.$('#DD3').show();
+        var tdRefEntry = w.document.getElementById("tdRefEntry");
+        tdRefEntry.style.display = "block";
+        SetPaneVisible(true);
+    } else {
+        var w = window.frames["main"];
+        w.$('#mes').text(m_cond).show();
+        w.$('#DD3').hide();
+        var tdRefEntry = w.document.getElementById("tdRefEntry");
+        tdRefEntry.style.display = "none";
+        SetPaneVisible(false);
+    }
+}
+function SetPaneVisible(visible)
+{
+	var lp = document.getElementById("leftPane");
+    switch (visible) {
+    case true:
+        lp.style.display = "";
+        break;
+    default:
+        lp.style.display = "none";
+        break;
+    }
+}
+function SetConditionVisible(panevisible, showcond, notsavecond) {
+    var cp = document.getElementById("conditionPane");
+    var $rp = $('#rightPane');
+    switch (panevisible) {
+        case true:
+            var cndvisible = g_showcondition;
+            if (showcond != undefined) {
+                cndvisible = showcond;
+                if (notsavecond == false) g_showcondition = showcond;
+            } else {
+                if (cp.style.visibility == "visible") break;
+            }
+            if (cndvisible) {
+                cp.style.height = "200px";
+                $rp.css('height', 'calc(100% - 200px)');
+            } else {
+                cp.style.height = "20px";
+                $rp.css('height', 'calc(100% - 20px)');
+            }
+            cp.style.visibility = "visible";
+            break;
+        default:
+            cp.style.height = "0";
+            $rp.css('height', '100%');
+            cp.style.visibility = "hidden";
+            break;
+    }
+    OnBodyResize();
+}
+function init()
+{
+    window.document.onkeydown = keyEv;
+	OnBodyResize();
+	LoadSearchOption();
+    initCBSetting();
+}
+function OnBodyResize()
+{
+	//var sep = document.getElementById("sepPane");
+	//var lp = document.getElementById("leftPane");
+	//var hd = document.getElementById("header");
+	//sep.style.posLeft = lp.offsetWidth - 5;
+	//sep.style.posTop = hd.offsetHeight;
+	//sep.style.posHeight = lp.offsetHeight;
+}
+function close_children()
+{
+	if (img_win != undefined)
+		if (!img_win.closed)
+			img_win.close();
+	if (lnk_win != undefined)
+		if (!lnk_win.closed)
+			lnk_win.close();
+	if (file_win != undefined)
+		if (!file_win.closed)
+			file_win.close();
+	if (colist_win != undefined)
+		if (!colist_win.closed)
+			colist_win.close();
+	if (coinfo_win != undefined)
+		if (!coinfo_win.closed)
+			coinfo_win.close();
+	if (approval_win != undefined)
+		if (!approval_win.closed)
+			approval_win.close();
+	if (aplist_win != undefined)
+		if (!aplist_win.closed)
+			aplist_win.close();
+	if (editcol_win != undefined)
+		if (!editcol_win.closed)
+			editcol_win.close();
+	if (linkview_win != undefined)
+		if (!linkview_win.closed)
+			linkview_win.close();
+	if (maillist_win != undefined)
+		if (!maillist_win.closed)
+			maillist_win.close();
+	if (mailset_win != undefined)
+		if (!mailset_win.closed)
+			mailset_win.close();
+	if (option_win != undefined)
+		if (!option_win.closed)
+			option_win.close();
+	if (revhist_win != undefined)
+		if (!revhist_win.closed)
+			revhist_win.close();
+	if (searchItem_win != undefined)
+		if (!searchItem_win.closed)
+			searchItem_win.close();
+	if (selectAttr_win != undefined)
+		if (!selectAttr_win.closed)
+			selectAttr_win.close();
+	if (setcondition_win != undefined)
+		if (!setcondition_win.closed)
+			setcondition_win.close();
+	if (permission_win != undefined)
+		if (!permission_win.closed)
+			permission_win.close();
+	if (exportcsv_win != undefined)
+	    if (!exportcsv_win.closed)
+	        exportcsv_win.close();
+	if (help_win != undefined)
+	    if (!help_win.closed)
+	        help_win.close();
+	for (var name in m_w) {
+		w = m_w[name];
+		if (w != undefined)
+			if (!w.closed)
+				w.close();
+	}
+}
+
+function FireEvent(id, bstrEventName)
+{
+    var $cmd = $('#' + id);
+    if ($cmd.css('display') != "none") {
+        switch (bstrEventName) {
+            case "onclick":
+                $cmd.click();
+                break;
+            case "onmouseover":
+                $cmd.mouseover();
+                break;
+        }
+    }
+}
+function CheckMenu(ctl, dir, e) {
+    switch (ctl.parentElement.id) {
+        case "folderpopup":
+        case "bompopup":
+        case "filepopup":
+            break;
+        default:
+            return;
+    }
+    cancelEv(e);
+    e.keyCode = 0;
+    var pmnu = null;
+    var nmnu = null;
+    if (ctl.previousSibling) {
+        pmnu = ctl.previousSibling;
+        if (!pmnu.id) pmnu = pmnu.previousSibling;
+    }
+    if (ctl.nextSibling) {
+        nmnu = ctl.nextSibling;
+        if (!nmnu.id) nmnu = nmnu.nextSibling;
+    }
+    switch (dir) {
+        case "u":
+            if (pmnu) {
+                if (pmnu.style.display != "none") pmnu.focus();
+            }
+            return false;
+        case "d":
+            if (nmnu) {
+                if (nmnu.style.display != "none") nmnu.focus();
+            }
+            return false;
+        default:
+            return true;
+    }
+    return true;
+}
+function keyEv()
+{
+    keyEvProc(window.event);
+}
+function keyEvProc(e)
+{
+    var mnu;
+    var ctl = document.activeElement;
+    switch (e.keyCode) {
+    case 27: // ESC
+        if (window.frames["main"].cancelQuery) {
+            window.frames["main"].cancelQuery();
+        }
+        cancelEv(e);
+        e.keyCode = 0;
+        return;
+
+    case 112: //    F1
+        if (window.event.ctrlKey) cnfwonhelp();
+        return;
+    case 116: //	F5
+	    if (GetEnabled('F025BU1012')) {
+	        mnu = document.getElementById("mnuRefresh");
+	        ButtonDown(mnu);
+	        cnfw_UpdateMainList(this);
+	    }
+	    cancelEv(e);
+	    e.keyCode = 0;
+	    return;
+
+    case 13:    //  Enter
+        if (ctl.id == "txtSearchCondition") {
+            mnu = document.getElementById("mnuSearch");
+            ButtonDown(mnu);
+            onFormSubmit();
+            cancelEv(e);
+            e.keyCode = 0;
+        }
+        break;
+    
+    case 27:	//	ESC
+        if (mFilePopupOpen) OnFileUnhover();
+        if (mFolderPopupOpen) OnFolderUnhover();
+        break;
+        
+    case 32:    //  Space
+        switch (ctl.id) {
+        case "mnuFolderG":    //分類フォルダ
+        case "mnuFolderS":    //よく使う検索フォルダ
+        case "mnuFolderM":    //マークフォルダ
+            ExecuteFolderCommand(ctl.id);
+	        cancelEv(e);
+	        e.keyCode = 0;
+            break;
+        case "mnuOpen":
+        case "mnuGet":
+        case "mnuCheckOut":
+        case "mnuCheckIn":
+        case "mnuCancelCO":
+        case "mnuRevisions":
+            FireEvent(ctl.id, "onclick");
+	        cancelEv(e);
+	        e.keyCode = 0;
+            break;
+        }
+        break;
+
+    case 38: //	↑
+        if (CheckMenu(ctl, "u", e)) {
+            cancelEv(e);
+            e.keyCode = 0;
+        }
+        break;
+
+    case 40: //	↓
+        if (CheckMenu(ctl, "d", e)) {
+            cancelEv(e);
+            e.keyCode = 0;
+        }
+        break;
+
+    case 66:    //  B
+        if (!mFolderPopupOpen) break;
+        FireEvent("mnuFolderG", "onclick");
+        cancelEv(e);
+        e.keyCode = 0;
+        break;
+
+    case 67:    //  C
+        if (!mFilePopupOpen) break;
+        FireEvent("mnuCancelCO", "onclick");
+        cancelEv(e);
+        e.keyCode = 0;
+        break;
+
+    case 69:    //  E
+        if (!mFilePopupOpen) break;
+        FireEvent("mnuOpen", "onclick");
+        cancelEv(e);
+        e.keyCode = 0;
+        break;
+
+    case 72:    //  H
+        if (!mFilePopupOpen) break;
+        FireEvent("mnuRevisions", "onclick");
+        cancelEv(e);
+        e.keyCode = 0;
+        break;
+
+    case 73:    //  I
+        if (!mFilePopupOpen) break;
+        FireEvent("mnuCheckIn", "onclick");
+        cancelEv(e);
+        e.keyCode = 0;
+        break;
+        
+    case 77:	//	M
+        if (!mFolderPopupOpen) break;
+        FireEvent("mnuFolderM", "onclick");
+        cancelEv(e);
+        e.keyCode = 0;
+        break;
+
+    case 78:    //  N
+        if (!mFilePopupOpen) break;
+        FireEvent("mnuGet", "onclick");
+        cancelEv(e);
+        e.keyCode = 0;
+        break;
+    
+    case 85:    //  U
+        if (!mFilePopupOpen) break;
+        FireEvent("mnuCheckOut", "onclick");
+        cancelEv(e);
+        e.keyCode = 0;
+        break;
+        
+    case 89:    //  Y
+        if (!mFolderPopupOpen) break;
+        FireEvent("mnuFolderS", "onclick");
+        cancelEv(e);
+        e.keyCode = 0;
+        break;
+        
+    default:
+	}
+
+	if(e.ctrlKey) {
+	    // FileList
+        var fl = window.main;
+        if (fl.document.readyState != 'complete' && fl.document.readyState != 'interactive') return;
+
+	    switch (e.keyCode) {
+        case 17:	//	Ctrl
+            return;
+
+        case 65:    //  Ctrl+A
+            var w = window.frames["main"];
+            w.ExecuteCommand("mnuEdit-SelectAll");
+		    cancelEv(e);
+		    break;
+    		
+	    case 76:	//	Ctrl+L
+	        mnu = document.getElementById("v1");
+	        ButtonDown(mnu);
+		    fl.SaveSelectedFiles();
+		    fl.SetViewMode(fl.document.getElementById("dmode").value);
+		    fl.CommandPostback("view");
+		    cancelEv(e);
+		    break;
+
+	    case 77:	//	Ctrl+M
+	        mnu = document.getElementById("v3");
+	        ButtonDown(mnu);
+		    fl.SaveSelectedFiles();
+		    fl.SetViewMode(1);
+		    fl.CommandPostback("view");
+		    cancelEv(e);
+		    break;
+
+	    case 78:	//	Ctrl+N
+	        mnu = document.getElementById("v2");
+	        ButtonDown(mnu);
+		    fl.SaveSelectedFiles();
+		    fl.SetViewMode(4);
+		    fl.CommandPostback("view");
+		    cancelEv(e);
+		    break;
+
+		case 82: //	Ctrl+R
+		    if (GetEnabled('F025BU1012')) {
+		        mnu = document.getElementById("mnuRefresh");
+		        ButtonDown(mnu);
+		        cnfw_UpdateMainList(this);
+		    }
+		    cancelEv(e);
+		    break;
+
+        case 85:	//	Ctrl+U
+            FireEvent("mnuCheckOut", "onclick");
+	        cancelEv(e);
+            return false;
+            break;
+        
+	    default:
+	    }
+	}  else if (e.altKey) {
+        switch (e.keyCode) {
+        case 18:	//	Alt
+            return;
+		
+		case 48:    //  Alt+0
+	        mnu = document.getElementById("mnuLogout");
+	        if (!mnu || mnu.style.display == "none") break;
+	        ButtonDown(mnu);
+            cmdLogOff_Click();
+		    cancelEv(e);
+            break;
+
+        case 49:    //  Alt+1
+            mnu = document.getElementById("mnuCheckOutList");
+            if (!mnu || mnu.style.display == "none") break;
+            ButtonDown(mnu);
+            ExecuteMenu("mnuCheckOutList");
+            cancelEv(e);
+            break;
+
+		case 50:    //  Alt+2
+	        mnu = document.getElementById("mnuApprovalList");
+	        if (!mnu || mnu.style.display == "none") break;
+	        ButtonDown(mnu);
+            ExecuteMenu("mnuApprovalList");
+		    cancelEv(e);
+            break;
+
+		case 51:    //  Alt+3
+	        mnu = document.getElementById("mnuMailList");
+	        if (!mnu || mnu.style.display == "none") break;
+	        ButtonDown(mnu);
+            ExecuteMenu("mnuMailList");
+		    cancelEv(e);
+            break;
+
+		case 52:    //  Alt+4
+	        mnu = document.getElementById("mnuFile");
+	        if (!mnu || mnu.style.display == "none") break;
+	        ButtonDown(mnu);
+            ShowHideSubMenu("filepopup", "mnuGet", "mnuFile", document.getElementById("cmdframe").offsetLeft + 246);
+		    cancelEv(e);
+            break;
+
+		case 53:    //  Alt+5
+	        mnu = document.getElementById("mnuProperty");
+	        if (!mnu || mnu.style.display == "none") break;
+	        ButtonDown(mnu);
+            ExecuteMenu("mnuProperty");
+		    cancelEv(e);
+            break;
+
+		case 54:    //  Alt+6
+	        var txtKey = document.getElementById("txtSearchCondition");
+	        if (!txtKey || txtKey.style.display == "none") break;
+	        txtKey.focus();
+		    cancelEv(e);
+            break;
+		    
+		case 55:    //  Alt+7
+	        mnu = document.getElementById("mnuHelp");
+	        if (!mnu || mnu.style.display == "none") break;
+	        ButtonDown(mnu);
+            ExecuteMenu("mnuHelp");
+		    cancelEv(e);
+            break;
+
+		case 56:    //  Alt+8
+	        mnu = document.getElementById("mnuMainte");
+	        if (!mnu || mnu.style.display == "none") break;
+	        ButtonDown(mnu);
+            ExecuteMenu("mnuMainte");
+		    cancelEv(e);
+            break;
+
+		case 57:    //  Alt+9
+	        mnu = document.getElementById("mnuRefresh");
+	        if (!mnu || mnu.style.display == "none") break;
+	        ButtonDown(mnu);
+            ExecuteMenu("mnuRefresh");
+		    cancelEv(e);
+            break;
+
+        case 66:    //  Alt+B
+            mnu = document.getElementById("mnuBom");
+            if (!mnu || mnu.style.display == "none") break;
+            ButtonDown(mnu);
+            var w = window.frames["main"];
+            w.SetOpenEditBom(e.shiftKey);
+            w.ExecuteCommand("mnuTool-Bom");
+            //ExecuteMenu("mnuBom");
+            cancelEv(e);
+            break;
+
+        case 74:    //  Alt+J
+            FireEvent("mnuEasyAttrSearch", "onclick");
+            cancelEv(e);
+            e.keyCode = 0;
+            break;
+		
+        case 88:    //  Alt+X
+	        mnu = document.getElementById("mnuFolder");
+	        if (!mnu || mnu.style.display == "none") break;
+	        ButtonDown(mnu);
+            ShowHideSubMenu("folderpopup","mnuFolderG","mnuFolder");
+		    cancelEv(e);
+            break;
+        		
+        case 89:    //  Alt+Y
+	        mnu = document.getElementById("mnuAttrSearch");
+	        if (!mnu || mnu.style.display == "none") break;
+	        ButtonDown(mnu);
+            ExecuteMenu("mnuAttrSearch");
+		    cancelEv(e);
+            break;
+
+        default:
+            break;
+        }
+    }
+}
+function cancelEv(e){
+    if (e == undefined) e = window.event;
+	e.returnValue = false;
+    e.cancelBubble = true;
+    e.preventDefault();
+}
+
+$(function () {
+    $(window).on('beforeunload', function () {
+        if (bLogoff)
+            return;
+
+        try {
+            var websocks = "";
+            var isSessionAvailable = false;
+            try {
+                $.ajax({
+                    url: "fwajaxproc.aspx",
+                    type: 'POST',
+                    async: false,
+                    data: {
+                        'cmd': 'checksessionisavailable'
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.data == "true") isSessionAvailable = true;
+                        if (data.websocks) websocks = data.websocks;
+                    },
+                    error: function (httpReq, textStatus, errorThrown) {
+                        isSessionAvailable = false;
+                    }
+                });
+            } catch (e) {
+                isSessionAvailable = false;
+            }
+            if (websocks != "") {
+                sendLogoutToBomEditor(websocks);
+            }
+        } catch (e) {
+            console.log(e.message);
+        }
+    });
+});
+
+var bLogoff = false;
+
+// ログオフする
+function cmdLogOff_Click() {
+    //if (!GetEnabled('F025BU1013')) return;
+    bLogoff = true;
+    var w = window.GetWinArray();
+    for (var name in w) {
+        var m1 = name.match(/^BomWin.*/);
+        if (m1 != null) {
+            if (!w[name].closed) {
+                if (w[name].document.getElementById("isAutonowinActive").value == "true") {
+                    ShowAlertDialog('D182', msgCloseAutoNoWindowBeforeLogout, null, null, function (returnValue, args) {
+                        w[name].focus();
+                        window.frames["dd3frame"].logout(w[name].document.title + '|');
+                    });    //ログアウトする前に自動採番ウィンドウを閉じてください。
+                    return false;
+                }
+            }
+        }
+        var m2 = name.match(/^propwin.*|^shFw_Layout.*/);
+        if (m2 != null) {
+            if (!w[name].closed) {
+                ShowAlertDialog('D183', msgClosePropertyWindowsBeforeLogout, null, null, function (returnValue, args) {
+                    w[name].focus();
+                    window.frames["dd3frame"].logout(w[name].document.title + '|');
+                });   //ログアウトする前にすべての属性ウィンドウを閉じてください。
+                return false;
+            }
+        }
+        var m3 = name.match(/^entrywin.*/);
+        if (m3 != null) {
+            if (!w[name].closed) {
+                ShowAlertDialog('D184', msgCloseEntryWindowsBeforeLogout, null, null, function (returnValue, args) {
+                    w[name].focus();
+                    window.frames["dd3frame"].logout(w[name].document.title + '|');
+                });      //ログアウトする前にすべての登録ウィンドウを閉じてください。
+                return false;
+            }
+        }
+        var m4 = name.match(/^matrixwin.*/);
+        if (m4 != null) {
+            if (!w[name].closed) {
+                ShowAlertDialog('D185', msgCloseMatrixWindowsBeforeLogout, null, null, function (returnValue, args) {
+                    w[name].focus();
+                    window.frames["dd3frame"].logout(w[name].document.title + '|');
+                });      //ログアウトする前にすべてのマトリクス機能ウィンドウを閉じてください。
+                return false;
+            }
+        }
+    }
+
+    // 権限ウィンドウもチェック
+    var pw = window.parent;
+    w = pw.permission_win;
+    if (w != undefined) {
+        if (!w.closed) {
+            ShowAlertDialog('D186', msgClosePermittionWindowBeforeLogout, null, null, function (returnValue, args) {
+                w.focus();
+                window.frames["dd3frame"].logout(w.document.title + '|');
+            });      //ログアウトする前に権限変更ウィンドウを閉じてください。
+            return false;
+        }
+    }
+    DeleteCD();
+
+    var websocks = "";
+    var isSessionAvailable = false;
+    try {
+        $.ajax({
+            url: "fwajaxproc.aspx",
+            type: 'POST',
+            async: false,
+            data: {
+                'cmd': 'checksessionisavailable'
+            },
+            dataType: 'json',
+            success: function (data) {
+                if (data.data == "true") isSessionAvailable = true;
+                if (data.websocks) websocks = data.websocks;
+            },
+            error: function (httpReq, textStatus, errorThrown) {
+                isSessionAvailable = false;
+            }
+        });
+    } catch (e) {
+        isSessionAvailable = false;
+    }
+    if (websocks != "") {
+        sendLogoutToBomEditor(websocks);
+    }
+
+    //  ヘルプウィンドウを自動的に閉じる
+    try {
+        w = GetRootWin();
+        if (w && w['m_helpWin']) {
+            w['m_helpWin'].close();
+        }
+    } catch (e) { }
+    if (isSessionAvailable) {
+        setTimeout(doServerLogoff, 10);
+    } else {
+        location.reload(true);
+    }
+}
+function doServerLogoff() {
+    CallServerLogOff("", "");
+}
+function DeleteCD() {
+    try {
+        var w = window.frames["main"];
+        if (w != undefined) {
+            w.DeleteCD();
+            m_DeleteCDDone = true;
+        }
+    } catch (e) {
+    }
+}
+function RecieveAuthenticationType(arg, context)
+{
+    if (arg == "Forms")
+        document.URL = document.location.reload(true);
+    else if (arg == "sso")
+        document.location.href = "ssoLogoutScreen.aspx?rurl=" + encodeURIComponent(document.location.href);
+    else
+        document.location.href = "logoutScreen.aspx?ReturnUrl=" + encodeURIComponent(document.location.href);
+}
+function LoadSearchOption()
+{
+    var rbFt = document.getElementById("rbFree");
+    var rbAs = document.getElementById("rbAttr");
+    var type = cnfw_LoadQuickSearchOption() - 0;
+    switch (type) {
+    case 0:
+        if (rbFt) rbFt.checked = false;
+        if (rbAs) rbAs.checked = false;
+        break;
+    case 1:
+        if (rbFt) rbFt.checked = true;
+        if (rbAs) rbAs.checked = false;
+        break;
+    case 2:
+        if (rbFt) rbFt.checked = false;
+        if (rbAs) rbAs.checked = true;
+        break;
+    case 3:
+        if (rbFt) rbFt.checked = true;
+        if (rbAs) rbAs.checked = true;
+        break;
+    default:
+        break;
+    }
+}
+// 検索実行
+function onFormSubmit() {
+    if (bLogoff)
+        return true;
+
+    if (!GetEnabled('F025BU1009')) return;
+    var txtKey = document.getElementById("txtSearchCondition");
+
+    var rbFt = document.getElementById("rbFree");
+    var rbAs = document.getElementById("rbAttr");
+    var ftVersion = document.getElementById("p_FullTextSearch").value;
+    var maxTermLength = document.getElementById("p_SAIndexMaxtermLength").value;
+    var type = 0;
+    if (rbFt.checked == true) type += 1;
+    if (rbAs.checked == true) type += 2;
+    cnfw_SaveQuickSearchOption(type);
+    var selectedLabel = document.getElementById('rbLabel').value;
+
+    var keyval = txtKey.value;  // ラベル内全文全属性検索用
+    var sval = txtKey.value;    // ラベル絞り込み無しの全文全属性検索用
+    var isOverTermLength = false;
+
+    var re = /\s*[ 　]\s*(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/g;
+    var keyvals = [];
+    var arr;
+    var idx = 0;
+    while ((arr = re.exec(txtKey.value)) != null) {
+        keyvals[keyvals.length] = txtKey.value.substring(idx, arr.index);
+        idx = arr.index + arr[0].length;
+    }
+    // 最後のキーワードを追加
+    if (idx < txtKey.value.length) {
+        keyvals[keyvals.length] = txtKey.value.substring(idx);
+    }
+    for (var i = 0; i < keyvals.length; i++) {
+        // SA版全文検索時はキーワード長をチェックする
+        if (rbFt.checked == true && ftVersion == 8) {
+            var hasDblQuote = false;
+            // 前後のダブルクォテーションを除去
+            if (keyvals[i].length > 1 && keyvals[i].charAt(0) == "\"" && keyvals[i].charAt(keyvals[i].length - 1) == "\"") {
+                hasDblQuote = true;
+                keyvals[i] = keyvals[i].substr(1, keyvals[i].length - 2);
+            }
+            if (keyvals[i].length > maxTermLength) {
+                isOverTermLength = true;
+                // 文字数を切る
+                keyvals[i] = keyvals[i].substr(0, maxTermLength);
+            }
+            if (hasDblQuote) {
+                keyvals[i] = "\"" + keyvals[i] + "\"";
+            }
+        }
+
+        if (i == 0) {
+            keyval = keyvals[i];
+            sval = keyvals[i];
+        } else {
+            keyval = keyval + "\t" + keyvals[i];
+            sval = sval + " " + keyvals[i];
+        }
+    }
+
+    if (isOverTermLength) {
+        ShowAlertDialog('D190', msgOverTermLengthError);      //検索キーワードは {0} 文字までに制限されています。\n{0} 文字を超えた文字は無視されます。
+    }
+
+    // 分類ラベル内全文全属性検索
+    if (selectedLabel != 0) {
+        if (txtKey.value.length == 0)
+            return true;
+
+        var cond = new Array();
+        var d = window.parent.frames["work"].document;
+
+        switch (type) {
+            case 1:
+                // 全文検索
+                for (var i = 0; i < keyvals.length; i++) {
+                    cond[i] = "-1x0x" + keyvals[i];
+                }
+                cond[cond.length] = (selectedLabel | 0x8000) + "x0x*";
+                d.getElementById("p_op").value = "AttrAndSearch";
+                break;
+            case 2:
+                // 全属性検索
+                keyvals = keyval.split("\t");
+                for (var i = 0; i < keyvals.length; i++) {
+                    cond[i] = (selectedLabel | 0x8000) + "x5x" +keyvals[i];
+                }
+                d.getElementById("p_op").value = "AttrAndSearch";
+                break;
+            case 3:
+                // ラベル名取得
+                var selectedLabelName
+                    = document.getElementById('rbLabel').options[document.getElementById('rbLabel').selectedIndex].text;
+                //全文検索全属性検索
+                keyvals = keyval.split("\t");
+                for (var i = 0; i < keyvals.length; i++) {
+                    cond[i] = "-1x0x" + selectedLabelName + "\b" + keyvals[i];
+                    cond[i + keyvals.length] = (selectedLabel | 0x8000) + "x5x" + keyvals[i];
+                }
+                d.getElementById("p_op").value = "AttrAndSearch";
+                break;
+            default:
+                return false;
+        }
+
+        d.getElementById("p_args").value = cond.join("\n");
+        d.getElementById("frm").submit();
+
+        return false;
+    }
+
+    //CB用の設定を記憶。searching.aspx.vbで[o]に反映されるように。
+    var rbCBSearchType1 = document.getElementById("F025RB1000");
+    if (rbCBSearchType1 && rbCBSearchType1.checked) {
+        g_cbsetting = "ft,";
+    }
+    var rbCBSearchType2 = document.getElementById("F025RB1001");
+    if (rbCBSearchType2 && rbCBSearchType2.checked) {
+        g_cbsetting = "ct,";
+    }
+    if (g_cbsetting.length > 0) {
+        var cbExtend = document.getElementById("F025CB1000").checked;
+        if (cbExtend) {
+            g_cbsetting += "true";
+        } else {
+            g_cbsetting += "false";
+        }
+    }
+    //var sval = txtKey.value;
+    if (rbFt.checked && g_cbsetting.length > 0) {
+        //CB用の設定を付加
+        sval = "!@!cbes:" + g_cbsetting + "!@!" + sval; 
+    }
+
+    switch (type) {
+        case 1:
+            g_currentpath = "%" + StrFolderFullTextSearch + "%\\" + encodeURI(sval);    //全文検索
+            break;
+        case 2:
+            g_currentpath = "%" + StrFolderAllAttrSearch + "%\\" + encodeURI(sval);     //全属性検索
+            break;
+        case 3:
+            g_currentpath = "%" + StrFolderFullTextSearch + StrFolderAllAttrSearch + "%\\" + encodeURI(sval);    //全文検索全属性検索
+            break;
+        default:
+            return true;
+    }
+    if (txtKey.value.length == 0)
+        return true;
+    g_keepconditionpane = false;
+    document.getElementById("main").contentWindow.document.location.replace("searching.aspx");
+    window.status = msgSearching;    //検索実行中...
+    return false;
+}
+//	デフォルトのポップアップメニューを非表示にする
+document.oncontextmenu = function()
+{
+    if (event.srcElement.id == "txtSearchCondition") {
+        //  全文・全属性テキストボックスでは右クリック有効に
+        return true;
+    }
+	return false;
+}
+function ExecuteMenu(cmd, resid) {
+    HideFolderPopup();
+    HideFilePopup();
+    HideBomPopup();
+    var w = window.frames["main"];
+    var cnt;
+
+    if (resid && resid.length > 0) {
+        if (!GetEnabled(resid)) {
+            //  無効化されているので何もしない
+            return
+        }
+    } else {
+        if (!document.getElementById(cmd)) {
+            //alert("DEBUG:" + cmd + "がありません");
+            return;
+        }
+        if (!GetEnabled(cmd)) {
+            //  無効化されているので何もしない
+            return
+        }
+    }
+    switch (cmd) {
+        case "mnuAttrSearch":
+            ResizeLeftPane(440);
+            SetConditionVisible(false);
+            SetSearchCondition("");
+            var opt = "";
+            if (window.event)
+                if (window.event.ctrlKey)
+                opt = "?ini=true";
+            window.frames["contents"].location.href = "attrsearch.aspx" + opt;
+            g_activepath = "";
+            g_currentpath = "";
+            g_keepconditionpane = false;
+            w.location.replace("searching.aspx?disablecancel=true");
+            window.status = msgInitializing;   //初期化中...
+            break;
+        case "mnuBom":
+            if (!w.ExecuteCommand) return;
+            if (window.event) {
+                w.SetOpenEditBom(window.event.shiftKey);
+            } else {
+                w.SetOpenEditBom(false);
+            }
+            w.ExecuteCommand("mnuTool-Bom"); break;
+        case "mnuCheckOutList":
+            if (colist_win&&!colist_win.closed) {
+                colist_win.document.location.href = "colist.aspx";
+                colist_win.focus();
+                return false;
+            }
+            var p = new Array();
+            var l = cnfw_loadWinPosition("colist", p);
+            colist_win = window.open("fwcmd.aspx?u=colist.aspx", "_blank", "left=" + p[0] + ",top=" + p[1] + ",width=800,height=600,resizable=yes,dependent=yes,status=yes", true);
+            break;
+        case "mnuApprovalList":
+            if (aplist_win&&!aplist_win.closed) {
+                aplist_win.focus();
+                return false;
+            }
+            aplist_win = window.open("ApprovalList.aspx", "mnuApprovalList", "width=760,height=400,scrollbars=yes,resizable=yes,dependent=yes,status=yes", true);
+            aplist_win.focus();
+            break;
+        case "mnuMailList":
+            ShowMailList(); break;
+        case "mnuFile":
+            if (!w.ExecuteCommand) return;
+            if (!w.GetSelectedCount) return;
+            cnt = w.GetSelectedCount();
+            if (cnt == 0) return;
+            var FileButtonCommand = document.getElementById("FileButtonCommand");
+            w.ExecuteCommand(FileButtonCommand.value); break;
+        case "mnuProperty":
+            if (!w.ExecuteCommand) return;
+            if (!w.GetSelectedCount) return;
+            cnt = w.GetSelectedCount();
+            if (cnt == 0) return;
+            if (window.event != null && window.event.shiftKey) {
+                w.SetOpenEditProperty(window.event.shiftKey);
+            } else {
+                w.SetOpenEditProperty(false);
+            }
+            w.ExecuteCommand("mnuFile-Property"); break;
+        case "mnuHelp":
+            cnfwonhelp();
+            //if (ToggleCnButton("mnuHelp", null, "i/helpmode.png")) {
+            //    SetHelpMode("true");
+            //} else {
+            //    SetHelpMode("false");
+            //}
+            //$("#mnuHelp").mouseover();//  画像を更新（refresh）したいので
+
+            break;
+        case "mnuMainte":
+            if (m_isGUIEditMode) {
+                //   [Shift]キーが押されていてもいなくてもGUI編集モードを解除
+                try {
+                    $.ajax({
+                        url: "configmode.aspx",
+                        type: 'POST',
+                        async: false,
+                        data: {
+                            'changemode': 'false'
+                        },
+                        dataType: "text",
+                        success: function (ret) {
+                        },
+                        error: function () {
+                        }
+                    });
+                } catch (e) { }
+                window.location.reload(); //再描画
+                break;
+            } else if (window.event != null && window.event.shiftKey) {
+                // 現在GUI編集モードでなくて、[Shift]キーが押されていた場合は、GUI編集モードを起動
+                try {
+                    $.ajax({
+                        url: "configmode.aspx",
+                        type: 'POST',
+                        async: false,
+                        data: {
+                            'changemode': 'true'
+                        },
+                        dataType: "text",
+                        success: function (ret) {
+                            if (ret == "true") {
+                    //GUI編集モードになったので再描画
+                    window.location.reload(); 
+                }
+                        },
+                        error: function () {
+                        }
+                    });
+                } catch (e) { }
+                break;
+            }
+            //  メンテナンス情報画面を起動
+            var w = GetWindow("maintelist");
+            if (w != undefined)
+                if (w.closed != true) {
+                    w.focus();
+                    return;
+                }
+            w = window.open("maintelist.aspx", "maintelist");
+            AddWindow(w, "maintelist");
+            break;
+        case "mnuRefresh":
+            if (!w.ExecuteCommand) return;
+            w.ExecuteCommand("mnuView-Refresh"); break;
+        default:
+    }
+}
+function OnMenuClick(mnu) {
+    if (mnu.style.display == "none") return;
+    if (!GetEnabled(mnu.id)) {
+        //  無効化されているので何もしない
+        return
+    }
+    var clickX = event.pageX;
+    var clientRect = mnu.getBoundingClientRect();
+    var positionX = clientRect.left + window.pageXOffset;
+    var x = clickX - positionX;
+    switch (mnu.id) {
+        case "mnuFile":
+            if (x > 38) {
+                ShowHideSubMenu("filepopup", "mnuGet", mnu.id);
+            } else if (mnu.src.indexOf("Od.") > 0) { //１つだけサブメニューの時もShowHideSubMenuを呼び、唯一のメニューをデフォルトコマンドに設定する
+                ShowHideSubMenu("filepopup", "mnuGet", mnu.id);
+            } else {
+                ExecuteMenu(mnu.id);
+            }
+            break;
+        case "mnuBom":
+            if (x > 42)
+                ShowHideSubMenu("bompopup", "mnuBomChild", mnu.id);
+            else
+                ExecuteMenu(mnu.id);
+            break;
+        default:
+            ExecuteMenu(mnu.id);
+            break;
+    }
+	return false;
+}
+function ShowHideSubMenu(mnuId, activeId, btnId)
+{
+    if (document.getElementById(mnuId).style.display == "block")
+        ClosePopup(mnuId, 0);
+    else
+        var popup = document.getElementById(mnuId);
+        if (!popup) return;
+        var btn = document.getElementById(btnId);
+        popup.style.display = "block";
+        var firstMenu = null;
+        switch (mnuId) {
+            case "folderpopup":
+                firstMenu = ShowFolderPopup();
+                break;
+            case "filepopup":
+                popup.style.left = (btn.offsetLeft) + 'px';
+	            firstMenu = ShowFilePopup();
+                break;
+            case "bompopup":
+                popup.style.left = (btn.offsetLeft) + 'px';
+	            ShowBomPopup();
+                break;
+            default:
+        }
+        var mnu = document.getElementById(activeId);
+        if (mnu) {
+            mnu.focus();
+        } else if (firstMenu) {
+            mnu = document.getElementById(firstMenu);
+            if (mnu) mnu.focus();
+        }
+        ClosePopup(mnuId, 6000);
+}
+var timerDragEnd;
+function startDrag()
+{
+    dragging = true;
+	var sep = document.getElementById("sepPane");
+	sep.style.left = (event.x - 5) + 'px';
+	sep.style.backgroundColor = "#aaa";
+}
+function onDragging(eventX, pane)
+{
+    var offset = 0;
+    switch (pane) {
+    case "leftPane":
+        offset = 0;
+        break;
+    case "rightPane":
+	    var rp = document.getElementById("rightPane");
+        offset = rp.parentElement.offsetLeft;
+        break;
+    }
+    var sep = document.getElementById("sepPane");
+    if (dragging) sep.style.left = (offset + eventX- 5) + 'px';
+}
+function endDrag()
+{
+    var sep = document.getElementById("sepPane");
+    sep.style.backgroundColor = "transparent";
+    ResizeLeftPane(event.x - 5);
+    dragging = false;
+}
+function ResizeLeftPane(w)
+{
+	SetPaneVisible(true);
+	var lp = document.getElementById("leftPane");
+	if (w <= 0) w = 1;
+	$('#leftPane').width(w);
+	var sep = document.getElementById("sepPane");
+	sep.style.left = w + 'px';
+}
+function OnRightPaneResize()
+{
+    MoveViewButton();
+}
+function MoveViewButton()
+{
+    setTimeout("ButtonMove()", 500);
+}
+function ButtonMove()
+{
+    //var viewbtn = document.getElementById("viewbtn");
+    //viewbtn.style.left = document.body.clientWidth - viewbtn.offsetWidth - 18;
+    //viewbtn.style.posTop = document.body.clientHeight - viewbtn.offsetHeight - 18;
+    //viewbtn.style.display = "block";
+}
+function ChangeViewMode(mode)
+{
+    var w = window.frames["main"];
+    w.ChangeViewMode(mode);
+}
+function ExecuteFolderCommand(cmd) {
+    dd3Visible = true;
+    searchOpVisible = true;
+    HideFolderPopup();
+
+    if (!GetEnabled(cmd)) {
+        //  無効かされているので何もしない
+        return
+    }
+    var f = window.frames["contents"];
+    var w = window.frames["main"];
+
+    switch (cmd) {
+        case "mnuFolderG":    //分類フォルダ
+            ResizeLeftPane(300);
+            SetSearchCondition("");
+            f.location.href = "Folders.aspx?type=g";
+            SetConditionVisible(false);
+            break;
+        case "mnuFolderS":    //よく使う検索
+            ResizeLeftPane(300);
+            SetSearchCondition("");
+            f.location.href = "Folders.aspx?type=s";
+            SetConditionVisible(true);
+            break;
+        case "mnuFolderM":    //マーク
+            ResizeLeftPane(300);
+            SetSearchCondition("");
+            f.location.href = "Folders.aspx?type=m";
+            SetConditionVisible(false);
+            break;
+
+        case "mnuEasyAttrSearch":
+            var EasySearchFolderTid = document.getElementById("EasySearchFolderTid");
+            if (EasySearchFolderTid.value == "") return;
+            var d = window.frames["work"].document;
+            d.getElementById("p_op").value = "ShowEasyAttrSearch";
+            d.getElementById("p_args").value = EasySearchFolderTid.value;
+            d.getElementById("frm").submit();
+            return true;
+            break;
+
+        default:
+            return false;
+            break;
+    }
+    g_activepath = "";
+    g_currentpath = "";
+    window.status = msgInitializing;   //初期化中...
+    return true;
+}
+function ExecuteFileCommand(cmd)
+{
+    HideFilePopup();
+    var w = window.frames["main"];
+    switch (w.GetSelectedCount()) {
+    case 0:
+        return;
+    case 1:
+        break;
+    default:
+        switch (cmd) {
+        case "mnuTool-RevisionList":
+                if ($('#mnuRevisions').attr('data-validcount') == 1) return;
+        }
+    }
+    w.ExecuteCommand(cmd);
+}
+function ExecuteLayoutCommand(cmd) {
+  var w = window.frames["main"];
+  w.ExecuteCommand(cmd);
+}
+function ExecuteBomCommand(cmd) {
+    var el = window.event.srcElement;
+    switch (el.tagName.toLowerCase()) {
+        case "span":
+            el = el.parentElement;
+            break;
+        default:
+    }
+    if (el.className == "mnudisabled") {
+        cancelEv();
+        return;
+    }
+    
+    HideBomPopup();
+    var w = window.frames["main"];
+    switch (w.GetSelectedCount()) {
+        case 0:
+            switch (cmd) {
+                case "mnuTool-Bom-Parent":
+                    return;
+            }
+            break;
+        case 1:
+            break;
+        default:
+            switch (cmd) {
+                case "mnuTool-Bom-Root":
+                case "mnuTool-Bom-CopyToBuffer":
+                case "mnuTool-Bom-RestartAll":
+                    break;
+                default:
+                    return;
+            }
+    }
+    switch (cmd) {
+        case "mnuTool-Bom-Root":
+        case "mnuTool-Bom-Child":
+        case "mnuTool-Bom-Parent":
+        case "mnuTool-Bom-Seiban":
+            w.SetOpenEditBom(window.event.shiftKey);
+            break;
+        default:
+            w.SetOpenEditBom(false);
+            break;
+    }
+    cancelEv();
+    w.ExecuteCommand(cmd);
+    window.event.preventDefault();
+}
+var optionShowTimer;
+var optionHideTimer;
+function OnLogoHover()
+{
+    clearTimeout(optionHideTimer);
+    optionShowTimer = setTimeout("ShowOptionPopup()", 1000);
+}
+function ShowOptionPopup()
+{
+    document.getElementById("logopopup").style.display="block";
+    document.getElementById("logopopup").style.zIndex = 100;
+}
+function OnLogoUnhover()
+{
+    clearTimeout(optionShowTimer);
+    CloseOption();
+}
+function OnLogoDown() {
+    if (event.shiftKey && event.ctrlKey) {
+        SetEnabled('F025BU1011', 'true'); // メンテナンスボタンの有効化
+        window.location.reload(); //再描画
+    }
+}
+function CloseOption()
+{
+    optionHideTimer = setTimeout(function(){ document.getElementById("logopopup").style.display="none"; }, 500);
+}
+function ClosePopup(id, msec)
+{
+    switch (id) {
+    case "folderpopup":
+        folderHideTimer = setTimeout("HideFolderPopup()", msec);
+        break;
+    case "filepopup":
+        fileHideTimer = setTimeout("HideFilePopup()", msec);
+        break;
+    case "bompopup":
+        bomHideTimer = setTimeout("HideBomPopup()", msec);
+        break;
+    default:
+    }
+}
+var dd3Visible = true;
+var searchOpVisible = true;
+var fileHideTimer;
+function OnFileHover()
+{
+    clearTimeout(fileHideTimer);
+}
+function ShowFilePopup()
+{
+    var w = window.frames["main"];
+    if (w.setDD3Visible != undefined)
+        w.setDD3Visible(false);
+    var s = window.frames["condition"];
+    if (s.SetControlVisible != undefined)
+        s.SetControlVisible(false);
+
+    var firstMenu = null;   //  mnuGetがデフォルトでフォーカスがあたるのだが、mnuGetが非表示になっていた場合に最初のメニューにフォーカスを当てるための変数
+    var bReadOnly = false;
+    if (document.getElementById("mnuCheckOut") == undefined) bReadOnly = true;
+
+    var cnt = w.GetSelectedCount();
+    $('a[data-validcount]', '#filepopup').each(function () {
+        var $this = $(this);
+        if (!firstMenu) firstMenu = this;
+        switch ($this.attr('data-validcount')) {
+            case "1":
+                if (cnt == 1) {
+                    $this.removeClass("mnudisabled");
+                } else {
+                    $this.addClass("mnudisabled");
+                }
+                break;
+
+            case "2":
+                if (cnt > 0) {
+                    $this.removeClass("mnudisabled");
+                } else {
+                    $this.addClass("mnudisabled");
+                }
+                break;
+
+            default:
+                $this.removeClass("mnudisabled");
+                break;
+        }
+    });
+
+    var mf = document.getElementById("mnuFile");
+    if (mf && mf.src.indexOf("Od.") > 0) {
+        document.getElementById(firstMenu).click();
+        document.getElementById("filepopup").style.display = "none";
+        return firstMenu;
+    } else {
+        mFilePopupOpen = true;
+        document.getElementById("filepopup").style.display = "block";
+        document.getElementById("filepopup").style.zIndex = 1200;
+        return firstMenu;
+    }
+}
+function OnFileUnhover()
+{
+    ClosePopup("filepopup", 500);
+}
+function HideFilePopup()
+{
+    mFilePopupOpen = false;
+    document.getElementById("filepopup").style.display="none";
+    var w = window.frames["main"];
+    if (w.setDD3Visible != undefined)
+        w.setDD3Visible(true);
+    var s = window.frames["condition"];
+    if (s.SetControlVisible != undefined)
+        s.SetControlVisible(true);
+}
+var bomHideTimer;
+function OnBomHover()
+{
+    clearTimeout(bomHideTimer);
+}
+function ShowBomPopup()
+{
+    var w = window.frames["main"];
+    if (w.setDD3Visible != undefined)
+        w.setDD3Visible(false);
+    var s = window.frames["condition"];
+    if (s.SetControlVisible != undefined)
+        s.SetControlVisible(false);
+    var an = document.getElementById("mnuBomAutoNo");
+
+    switch (w.GetSelectedCount()) {
+        case 0:
+            if (document.getElementById("mnuBomRestartAll")) document.getElementById("mnuBomRestartAll").className = "";
+            if (document.getElementById("mnuBomRoot")) document.getElementById("mnuBomRoot").className = "";
+            if (document.getElementById("mnuBomChild")) document.getElementById("mnuBomChild").className = "mnudisabled";
+            if (document.getElementById("mnuBomParent")) document.getElementById("mnuBomParent").className = "mnudisabled";
+            if (document.getElementById("mnuBomSeiban")) document.getElementById("mnuBomSeiban").className = "mnudisabled";
+            if (document.getElementById("mnuBomAttachedFiles")) document.getElementById("mnuBomAttachedFiles").className = "mnudisabled";
+            if (document.getElementById("mnuBomRestart")) document.getElementById("mnuBomRestart").className = "mnudisabled";
+            if (an != undefined) an.className = "";
+            if (document.getElementById("mnuBomCopyToBuffer")) document.getElementById("mnuBomCopyToBuffer").className = "mnudisabled";
+            break;
+        case 1:
+            if (document.getElementById("mnuBomRestartAll")) document.getElementById("mnuBomRestartAll").className = "";
+            if (document.getElementById("mnuBomRoot")) document.getElementById("mnuBomRoot").className = "";
+            if (document.getElementById("mnuBomChild")) document.getElementById("mnuBomChild").className = "";
+            if (document.getElementById("mnuBomParent")) document.getElementById("mnuBomParent").className = "";
+            if (document.getElementById("mnuBomSeiban")) document.getElementById("mnuBomSeiban").className = "";
+            if (document.getElementById("mnuBomAttachedFiles")) document.getElementById("mnuBomAttachedFiles").className = "";
+            if (document.getElementById("mnuBomRestart")) document.getElementById("mnuBomRestart").className = "";
+            if (an != undefined) an.className = "";
+            if (document.getElementById("mnuBomCopyToBuffer")) document.getElementById("mnuBomCopyToBuffer").className = "";
+            break;
+        default:
+            if (document.getElementById("mnuBomRestartAll")) document.getElementById("mnuBomRestartAll").className = "";
+            if (document.getElementById("mnuBomRoot")) document.getElementById("mnuBomRoot").className = "";
+            if (document.getElementById("mnuBomChild")) document.getElementById("mnuBomChild").className = "mnudisabled";
+            if (document.getElementById("mnuBomParent")) document.getElementById("mnuBomParent").className = "mnudisabled";
+            if (document.getElementById("mnuBomSeiban")) document.getElementById("mnuBomSeiban").className = "mnudisabled";
+            if (document.getElementById("mnuBomAttachedFiles")) document.getElementById("mnuBomAttachedFiles").className = "mnudisabled";
+            if (document.getElementById("mnuBomRestart")) document.getElementById("mnuBomRestart").className = "mnudisabled";
+            if (an != undefined) an.className = "mnudisabled";
+            if (document.getElementById("mnuBomCopyToBuffer")) document.getElementById("mnuBomCopyToBuffer").className = "";
+            break;
+    }
+
+    mBomPopupOpen = true;
+    document.getElementById("bompopup").style.display="block";
+    document.getElementById("bompopup").style.zIndex = 1200;
+}
+function OnBomUnhover()
+{
+    ClosePopup("bompopup", 500);
+}
+function HideBomPopup()
+{
+    mFilePopupOpen = false;
+    document.getElementById("bompopup").style.display="none";
+    var w = window.frames["main"];
+    if (w.setDD3Visible != undefined)
+        w.setDD3Visible(true);
+    var s = window.frames["condition"];
+    if (s.SetControlVisible != undefined)
+        s.SetControlVisible(true);
+}
+var folderHideTimer;
+function OnFolderHover()
+{
+    clearTimeout(folderHideTimer);
+}
+function ShowFolderPopup()
+{
+    if (!GetEnabled('F025BU1000')) {
+        document.getElementById("folderpopup").style.display = "none";
+        return;
+    } 
+    mFolderPopupOpen = true;
+	document.getElementById("sepPane").style.display="none";
+    document.getElementById("folderpopup").style.display="block";
+    document.getElementById("folderpopup").style.zIndex = 1200;
+    var w = window.frames["main"];
+    dd3Visible = false;
+    if (w.setDD3Visible != undefined)
+        w.setDD3Visible(false);
+    var s = window.frames["condition"];
+    if (s.SetControlVisible != undefined)
+        s.SetControlVisible(false);
+    var f = window.frames["contents"];
+
+    var firstMenu = null;
+    if (document.getElementById("mnuFolderG")) firstMenu = "mnuFolderG";
+    if (document.getElementById("mnuFolderS")) { if (!firstMenu) firstMenu = "mnuFolderS" };
+    if (document.getElementById("mnuFolderM")) { if (!firstMenu) firstMenu = "mnuFolderM" };
+
+    var mf = document.getElementById("mnuFolder");
+    if (mf && mf.src.indexOf("Od.") > 0) {
+        //   たった1つのサブメニュー
+        document.getElementById("folderpopup").style.display = "none";
+        ExecuteFolderCommand(firstMenu);
+    }
+
+    if (f.document.location.pathname.indexOf("attrsearch.aspx") < 0) return firstMenu;
+    searchOpVisible = false;
+    f.SetSearchOpVisible(false);
+
+    return firstMenu;
+}
+function OnFolderUnhover()
+{
+    ClosePopup("folderpopup", 500);
+}
+function HideFolderPopup()
+{
+    mFolderPopupOpen = false;
+	document.getElementById("sepPane").style.display="block";
+    document.getElementById("folderpopup").style.display="none";
+    var w = window.frames["main"];
+    if (!dd3Visible && w.setDD3Visible != undefined)
+        w.setDD3Visible(true);
+    var s = window.frames["condition"];
+    if (s.SetControlVisible != undefined)
+        s.SetControlVisible(true);
+    dd3Visible = true;
+    var f = window.frames["contents"];
+    if (f.document.location.pathname.indexOf("attrsearch.aspx") < 0) return;
+    searchOpVisible = true;
+    f.SetSearchOpVisible(true);
+}
+function focusme(mnu)
+{
+    //if (mnu.parentElement.currentStyle.display == "none") return;
+    mnu.focus();
+}
+function SetEasySearchFolderTid(tid) {
+    var EasySearchFolderTid = document.getElementById("EasySearchFolderTid");
+    EasySearchFolderTid.value = tid;
+    if (tid == "") {
+        ButtonEnabled("mnuEasyAttrSearch", false);
+    } else {
+        ButtonEnabled("mnuEasyAttrSearch", true);    
+    }
+}
+//  ボタンクラスの生成
+function RegistButton(id, src, srch, alt, srcd, srcx, enabled) {
+    cnButtons[id] = new CnButton(id, src, srch, alt, srcd, srcx, enabled);
+}
+
+//  dd3 準備完了
+function OnDD3Ready() {
+    if (!m_DeleteCDDone) DeleteCD();
+}
+
+//コマンドボタンの初期化
+var cnButtons = new Array();
+
+function setHelpWin(w) {
+    help_win = w;
+}
+
+function LocateMainteInfoPopup(div) {
+    var view = document.getElementById("rightPane");
+    view.appendChild(div);
+    div.style.position = "absolute";
+    div.style.left = view.offsetLeft + "px";
+    div.style.top = "0";
+    div.style.width = "100%";
+    //div.style.height = "100%";
+}
+
+function OnSearchStarted() {
+    popclose();
+}
+function initCBSetting() {
+    $("#F025RB1000").on('click', function (e) {
+        setCBOption();
+    });
+    $("#F025RB1001").on('click', function (e) {
+        setCBOption();
+    });
+    $("#F025CB1000").on('click', function (e) {
+        setCBOption();
+    });
+}
+//  ConceptBaseのオプションを記憶
+function setCBOption() {
+    var rbCBSearchType1 = document.getElementById("F025RB1000");
+    if (rbCBSearchType1 && rbCBSearchType1.checked) {
+        g_cbsetting = "ft,";
+    }
+    var rbCBSearchType2 = document.getElementById("F025RB1001");
+    if (rbCBSearchType2 && rbCBSearchType2.checked) {
+        g_cbsetting = "ct,";
+    }
+    if (g_cbsetting.length > 0) {
+        var cbExtend = document.getElementById("F025CB1000").checked;
+        if (cbExtend) {
+            g_cbsetting += "true";
+        } else {
+            g_cbsetting += "false";
+        }
+    }
+
+    $.ajax({
+        url: "fwajaxproc.aspx",
+        type: 'POST',
+        async: 'true',
+        data: {
+            'cmd': 'SetCBOption',
+            'value': g_cbsetting
+        },
+        dataType: "json",
+        success: function (data) {
+        },
+        error: function () {
+        }
+    });
+}
+//  WebSocketオブジェクトの生成
+function initWebSocket() {
+    try {
+        var host = window.location.hostname;
+        var port = window.location.port;
+        var path = window.location.pathname.toLowerCase().replace("default.aspx", "CnBomHandler.ashx");
+        var wsprotcl = "ws://";
+        var protcl = location.protocol.toLowerCase();
+        if (protcl == 'https:') {
+            wsprotcl = "wss://";
+        }
+        var wsurl = "";
+        if (port == "") {
+            wsurl = wsprotcl + host + path;
+        } else {
+            wsurl = wsprotcl + host + ":" + port + path;
+        }
+        
+        m_socket = new WebSocket(wsurl);
+
+        m_socket.onopen = function () {
+            console.log("onopen");
+        };
+        m_socket.onclose = function () {
+            console.log("onclose");
+        };
+        m_socket.onmessage = function (msg) {
+            console.log("msg " + msg)
+            eval(msg.data);
+        };
+    } catch (e) {
+        console.log(e.message);
+    }
+}
+//  他のaspxからWebSocketオブジェクト取得用
+function getWebSocketObj() {
+    return m_socket;
+}
+//  各WebSocketにログアウトのメッセージを送る
+function sendLogoutToBomEditor(websockIds) {
+    if (window.frames["main"] && window.frames["main"].frames["bomframe"].sendLogoutToBomEditor) {
+        window.frames["main"].frames["bomframe"].sendLogoutToBomEditor(websockIds);
+    }
+}

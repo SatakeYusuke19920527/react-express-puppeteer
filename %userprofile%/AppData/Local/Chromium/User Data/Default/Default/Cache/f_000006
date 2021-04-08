@@ -1,0 +1,631 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head id="hd"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>
+	CONNECTED FullWEB
+</title><meta name="GENERATOR" content="Microsoft Visual Studio .NET 7.1"><meta content="http://schemas.microsoft.com/intellisense/ie5" name="vs_targetSchema"><link rel="SHORTCUT ICON" href="favorite.ico" /><link href="chronos.css" type="text/css" rel="stylesheet" /><link href="UserCss/maintenanceinfo.css" type="text/css" rel="stylesheet" /><link href="UserCss/jquery-ui.min.css" type="text/css" rel="Stylesheet" /><link href="UserCss/jquery-ui-1.12.1.min.css" rel="stylesheet" />
+        <style type="text/css">
+            .ui-autocomplete  {font-size: 9pt; z-index:100; text-overflow: ellipsis; overflow: hidden; width: 170px;}
+        </style>
+        <script src="Scripts/jquery-1.7.1.min.js" type="text/javascript"></script>
+        <script src="Scripts/jquery-ui.min.js?v=jquery-ui-1.2.1" type="text/javascript"></script>
+		<script type="text/javascript" src="./help.js?v=9.6.28"></script>
+		<script type="text/javascript" src="./FullWeb.js?v=9.6.28"></script>
+		<script type="text/javascript" src="./cnButton.js?v=9.6.28"></script>
+		<script type="text/javascript" src="./mainteinfo.js?v=9.6.28"></script>
+		<script type="text/javascript" src="Scripts/fw_default.js?v=9.6.28"></script>
+        <script type="text/javascript">
+        <!--
+            var _fww = true;
+            var msgCloseAutoNoWindowBeforeLogout = "ログアウトする前に自動採番ウィンドウを閉じてください。";
+            var msgClosePropertyWindowsBeforeLogout = "ログアウトする前にすべての属性ウィンドウを閉じてください。";
+            var msgCloseEntryWindowsBeforeLogout = "ログアウトする前にすべての登録ウィンドウを閉じてください。";
+            var msgClosePermittionWindowBeforeLogout = "ログアウトする前に権限設定ウィンドウを閉じてください。";
+            var msgCloseMatrixWindowsBeforeLogout = "ログアウトする前にすべてのマトリクス機能ウィンドウを閉じてください。";
+            var StrFolderFullTextSearch = "全文検索";
+            var StrFolderAllAttrSearch = "全属性検索";
+            var msgSearching = "検索実行中...";
+            var msgInitializing = "初期化中...";
+            var urlindex = "help/index.htm";
+            var msgOverTermLengthError = "検索キーワードは {0} 文字までに制限されています。\n{0} 文字を超えた文字は無視されます。";
+        //-->
+        </script>
+        <script type="text/javascript" src="default.js?v=9.6.28"></script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $('#onloadscripts p').each(function (e) {
+                    $.getScript($(this).text(), null);
+                });
+                $('#custombuttons p').each(function (e) {
+                    $.globalEval("ExButtonMan.init('" + $(this).text() + "');");
+                });
+                $("#mnuConfig").on('click', function (e) {
+                    var w = window.open("copysetting.aspx", "configset", "width=800,height=600,resizable=no,dependent=yes,status=yes", true);
+                    AddWindow(w, 'configset');
+                });
+                // リソースの置換
+                msgOverTermLengthError = msgOverTermLengthError.replace(/\{0\}/g, document.getElementById("p_SAIndexMaxtermLength").value);
+                if ($("#p_initWebSocket").val() == "true") {
+                    initWebSocket();
+                }
+            });
+            var ExButtonMan = {
+                create: function (pid, id, caption, alt, src, func) {
+                    var $btn = $('<div class="btnl"><div class="btnr"><img border="0"/><p></p></div></div>');
+                    $btn
+                        .css({
+                            'height': '46px',
+                            'display': 'inline'
+                        });
+                    $('div', $btn)
+                        .css({
+                            'height': '46px',
+                            'position': 'absolute',
+                            'top': '1px'
+                        });
+                    $('img', $btn)
+                        .css({
+                            'cursor': 'pointer'
+                        })
+                        .live('click', func)
+                        .attr({
+                            'id': id,
+                            'title': alt,
+                            'src': src
+                        });
+                    $('p', $btn)
+                        .css({
+                            'position': 'absolute',
+                            'width': '100%',
+                            'left': '0',
+                            'top': '30px',
+                            'text-align': 'center',
+                            'cursor': 'pointer',
+                            'height': '10px',
+                            'font-stretch': 'narrower'
+                        })
+                        .text(caption);
+                    $('#' + pid).append($btn);
+                    $btn.css('width', $('img', $btn).width());
+                },
+                init: function (id) {
+                    $id = $('#' + id);
+                    $id
+                        .hover(function (e) {
+                            var $this = $(this);
+                            $this.closest('div.btnl').css({
+                                'background': 'url(i/btnhl.gif) no-repeat center left'
+                            });
+                            $this.closest('div.btnr').css({
+                                'background': 'url(i/btnhr.gif) no-repeat center right'
+                            });
+                        })
+                        .mouseout(function () {
+                            var $this = $(this);
+                            $this.closest('div.btnl').css({
+                                'background': ''
+                            });
+                            $this.closest('div.btnr').css({
+                                'background': ''
+                            });
+                        });
+                    $id.closest('div.btnr').css({
+                        'position': ''
+                    });
+                    $id.closest('div.btnl').css({
+                        'display': 'inline-block'
+                    });
+                    $id.closest('div.btnl').css({
+                        'width': $id.width()
+                    });
+                },
+                bind: function (id, type, fn) {
+                    $('#' + id).bind(type, fn);
+                },
+                unbind: function (id, type, fn) {
+                    $('#' + id).unbind(type, fn);
+                },
+                setEnabled: function (id, newval) {
+                    if (newval == true) {
+                        $('#' + id)
+                            .css({ 'filter': '',
+                                'cursor': 'pointer'
+                            })
+                            .prop({ 'disabled': false });
+                    } else {
+                        $('#' + id)
+                            .css({ 'filter': 'progid:DXImageTransform.Microsoft.BasicImage(grayscale=1) alpha(opacity=70)',
+                                'cursor': 'default'
+                            })
+                            .prop({ 'disabled': true });
+                    }
+                }
+            };
+            var _busy = false;
+            var termType = 1;    //  1が自分の入力履歴のみ、16が選択値のみ、31が全て
+            //AutoCompleteを設定する
+            function setupAutocomplete(elem, aaid) {
+                if ($('#p_enableAutoComplete').val() != 'true') return;
+                _busy = true;
+                $("#" + elem.id).autocomplete({
+                    source:
+                    function (request, response) {
+                        $.ajax({
+                            url: "fwajaxproc.aspx",
+                            type: 'POST',
+                            async: 'true',
+                            data: {
+                                'cmd': 'GetTermList',
+                                'term': request.term,
+                                'aaid': aaid,
+                                'type': termType
+                            },
+                            dataType: "json",
+                            success: function (data) {
+                                _busy = false;
+                                response(data);
+                            },
+                            error: function () {
+                                _busy = false;
+                            }
+                        });
+                    },
+                    open: function () {
+                        //  dd3部分を重なるため、非表示にする
+                        var w = window.frames["main"];    
+                        w.setDD3Visible(false);
+                        return false;
+                    },
+                    close: function () {
+                        //  dd3部分を表示に戻す
+                        var w = window.frames["main"];
+                        w.setDD3Visible(true);
+                        return false;
+                    },
+                    minLength: 0,
+                    delay: 200
+                });
+                $("#" + elem.id).focus(
+                    function () {
+                        termType = 1;
+                        $(this).autocomplete("search", "");
+                });
+                $("#" + elem.id).keydown(
+                    function (e) {
+                        if (termType == 1) termType = 31;
+                        return;
+                        //  モードのトグルはしない
+                    });
+            }
+            //  語句候補をサーバ側に渡す
+            function setTermHistory(elem, aaid) {
+                _busy = true;
+                var term = $("#" + elem.id).val();
+                $.ajax({
+                    url: "fwajaxproc.aspx",
+                    type: 'POST',
+                    async: 'true',
+                    data: {
+                        'cmd': 'SetTermHistory',
+                        'term': term,
+                        'aaid': aaid
+                    },
+                    success: function (data) {
+                        _busy = false;
+                    },
+                    error: function () {
+                        _busy = false;
+                    }
+                });
+            }
+            $(function () {
+                window.document.onkeydown = keyEv;
+                OnBodyResize();
+                InitImages();
+				initCBSetting();
+            });
+            function OnBodyResize() {
+                //var $main = $('#main');
+                //$main.height($(window).innerHeight() - $main.offset().top);
+                var sep = document.getElementById("sepPane");
+                var lp = document.getElementById("leftPane");
+                var hd = document.getElementById("header");
+                sep.style.left = (lp.offsetWidth - 5) + 'px';
+                sep.style.top = hd.offsetHeight + 'px';
+                sep.style.height = lp.offsetHeight + 'px';
+            }
+        </script>
+        <style type="text/css">
+            * {
+                box-sizing: border-box;
+                outline:none;
+            }
+            .ui-menu {
+                background-color: #eee;
+                font-family: 'MS Gothic';
+                font-size: 9pt;
+                line-height: 10px;
+                width: 75px; 
+                border: outset 2px;
+            }
+            .ui-menu-item {
+                padding: 2px 4px;
+            }
+            .ui-menu-item a {
+                text-decoration:none;
+                background-color: #eee;
+                border: none;
+                outline: none;
+                height: 100%;
+                white-space: nowrap;
+            }
+            .ui-menu-item a:hover {
+                background-color: #3D80DF;
+                color: #fff;
+            }
+            #viewbtn {
+                position: absolute;
+                right: 16px;
+                bottom: 16px;
+                margin:0;
+                padding:0;
+                white-space:nowrap;
+            }
+            #rbLabel {
+                height: 21px;
+                font-family: MS PGothic,Tahoma,Verdana,Arial;
+            }
+            #searchoption input,#searchoption label {
+                vertical-align: middle;
+            }
+            #cnfwIframeDiv {
+                height: 100% !important;
+            }
+        </style>
+        <style type="text/css">
+            .ui-dialog-titlebar {padding: 1em;}
+            .ui-dialog-titlebar {font-size: small;}
+        </style>
+	<link id="help" href="help/index.htm" rel="help" /></head>
+	<body onload="" onmouseover="cnfw_MOver()" onmousemove="onDragging(event.x);" onresize="OnBodyResize();" style="padding:0;margin:0;position:relative;" onunload="return close_children();" onkeydown="keyEv();" ondragstart="cancelEv();" ondragenter="cancelEv();" ondragover="cancelEv();">
+		<form name="frm" method="post" action="./Default.aspx?wikey=a983f133fa044278b93d840e6b84cf39" id="frm" style="height:calc(100vh - 2px);">
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="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" />
+
+<script type="text/javascript">
+<!--
+var theForm = document.forms['frm'];
+if (!theForm) {
+    theForm = document.frm;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+// -->
+</script>
+
+
+<script src="/FullWEB/WebResource.axd?d=pynGkmcFUV13He1Qd6_TZGOPT47n37wN6ZpQk9vErEhSmkm_hc8EG4CDXRMmoRTydSeTIUqskJLbFbUowf5M1g2&amp;t=637461305481343508" type="text/javascript"></script>
+
+
+<script type="text/javascript">
+<!--
+var _wikey='a983f133fa044278b93d840e6b84cf39';function CallServerLogOff(arg, context) {WebForm_DoCallback('__Page',arg,RecieveAuthenticationType,context,null,false)};// -->
+</script>
+
+<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="1D60C08E" />
+<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="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" />
+		    <table border="0" cellspacing="0" cellpadding="0" style="width:100%;height:100%;">
+		        <tr>
+		            <td id="header" style="height:47px;" valign="top">
+		            <div>
+			            <table style="width:100%;height:100%;" border="0" cellpadding="0" cellspacing="0">
+				            <tr>
+					            <td style="width:145px;">
+					                <img src="i/logo_c.gif" id="cnLogo" onmouseover="OnLogoHover();" onmouseout="OnLogoUnhover();" onmousedown="OnLogoDown();" style="vertical-align: middle" title="バージョン9.6.28" />
+					            </td>
+					            <td id="cmdLeftFrame" style="position:relative;white-space:nowrap;">
+					                <div id="logopopup" onmouseover="OnLogoHover();" onmouseout="OnLogoUnhover();">
+					                    <table style="width:100%;height:100%;margin:0;padding:0;white-space:normal;" cellspacing="0" cellpadding="0">
+					                    <tr>
+					                        <td rowspan="2" style="width:18px;background-color:#eee;" valign=top><img src="i/pu.GIF" /></td>
+					                        <td>
+                                                <p id="lblLoginUser" style="margin:0;">テスト管理[管理者]</p>
+					                        </td>
+					                    </tr>
+					                    <tr id="rowOpt">
+	<td style="border-top:1px solid #666;margin:0px;">
+												<table cellspacing="0" cellpadding="0" 
+                                                    style="width:100%;height:100%;border-collapse:collapse;border-spacing:0px;" border="0">
+													<tr><td valign="top">
+                                                            
+													    </td>
+                                                        <td>
+                                                            <a href="javascript:cnfw_ShowOption(window, false);" id="lkbOption" style="display:table-cell;height:100%;margin:0;">オプション</a>
+                                                        </td>
+													</tr>
+												</table>
+					                        </td>
+</tr>
+
+					                    </table>
+				                    </div>
+					                <div id="folderpopup" class="mnu" style="position:absolute;left:0;top:44px;z-index:100;" onmouseover="OnFolderHover();" onmouseout="OnFolderUnhover();"><a href="#" id="mnuFolderG" onclick="ExecuteFolderCommand(&#39;mnuFolderG&#39;)" onmouseover="focusme(this)"><span style="padding-left:24px;background-image: url(i/sf.gif); background-repeat: no-repeat; background-position: left center;" >分類フォルダ(B)</span></a><a href="#" id="mnuFolderS" onclick="ExecuteFolderCommand(&#39;mnuFolderS&#39;)" onmouseover="focusme(this)"><span style="padding-left:24px;background-image: url(i/vf.gif); background-repeat: no-repeat; background-position: left center;" >よく使う検索(Y)</span></a><a href="#" id="mnuFolderM" onclick="ExecuteFolderCommand(&#39;mnuFolderM&#39;)" onmouseover="focusme(this)"><span style="padding-left:24px;background-image: url(i/wf.gif); background-repeat: no-repeat; background-position: left center;" >マーク(M)</span></a></div>
+                                <img src="i/btnFolder.ja.gif" id="mnuFolder" class="btn" onclick="ShowHideSubMenu(&quot;folderpopup&quot;,&quot;mnuFolderG&quot;,&quot;mnuFolder&quot;);" /><img src="i/btnSearch.ja.gif" id="mnuAttrSearch" class="btn" onclick="return OnMenuClick(this);" /><img src="i/btnEasySearch.ja.gif" id="mnuEasyAttrSearch" class="btn" onclick="return ExecuteFolderCommand(&#39;mnuEasyAttrSearch&#39;);" /></td>
+
+					            <td align="right" style="vertical-align:middle;position:relative;" nowrap="nowrap">
+					                <div id="cmdframe" style="display:inline-block;vertical-align:middle;"><img src="i/btnBom.gif" id="mnuBom" class="btn" onclick="return OnMenuClick(this);" style="margin-right:0;" /><img src="i/btnCL.ja.gif" id="mnuCheckOutList" class="btn" onclick="return OnMenuClick(this);" /><img src="i/btnAL.ja.gif" id="mnuApprovalList" class="btn" onclick="return OnMenuClick(this);" /><img src="i/btnML.ja.gif" id="mnuMailList" class="btn" onclick="return OnMenuClick(this);" /><img src="i/btnFile.ja.gif" id="mnuFile" class="btn" onclick="return OnMenuClick(this);" /><img src="i/btnProp.ja.gif" id="mnuProperty" class="btn" onclick="return OnMenuClick(this);" /></div>
+					                <div id="bompopup" class="mnu" style="position:absolute;top:44px;z-index:100;" onmouseover="OnBomHover();" onmouseout="OnBomUnhover();"><a href="#" id="mnuBomRestartAll" onclick="ExecuteBomCommand(&#39;mnuTool-Bom-RestartAll&#39;)" onmouseover="focusme(this)" data-validcount="0"><span>編集再開（作業領域）</span></a><a href="#" id="mnuBomRoot" onclick="ExecuteBomCommand(&#39;mnuTool-Bom-Root&#39;)" onmouseover="focusme(this)" data-validcount="0"><span>ルート階層から（表示/編集）</span></a><a href="#" id="mnuBomChild" onclick="ExecuteBomCommand(&#39;mnuTool-Bom-Child&#39;)" onmouseover="focusme(this)" data-validcount="1"><span>選択から順展開（表示/編集）</span></a><a href="#" id="mnuBomParent" onclick="ExecuteBomCommand(&#39;mnuTool-Bom-Parent&#39;)" onmouseover="focusme(this)" data-validcount="1"><span>選択から逆展開表示</span></a><a href="#" id="mnuBomSeiban" onclick="ExecuteBomCommand(&#39;mnuTool-Bom-Seiban&#39;)" onmouseover="focusme(this)" data-validcount="1"><span>選択から製番展開</span></a><a href="#" id="mnuBomAttachedFiles" onclick="ExecuteBomCommand(&#39;mnuTool-Bom-AttachedFiles&#39;)" onmouseover="focusme(this)" data-validcount="1"><span>選択から添付先表示</span></a><a href="#" id="mnuBomRestart" onclick="ExecuteBomCommand(&#39;mnuTool-Bom-Restart&#39;)" onmouseover="focusme(this)" data-validcount="0"><span>選択を編集再開</span></a><a href="#" id="mnuBomAutoNo" onclick="ExecuteBomCommand(&#39;mnuTool-Bom-AutoNo&#39;)" onmouseover="focusme(this)" data-validcount="1"><span>採番...</span></a><a href="#" id="mnuBomCopyToBuffer" onclick="ExecuteBomCommand(&#39;mnuTool-Bom-CopyToBuffer&#39;)" onmouseover="focusme(this)" data-validcount="2"><span>アイテムをBOMへコピー</span></a></div>
+					                <div id="filepopup" class="mnu" style="position:absolute;top:44px;z-index:100;" onmouseover="OnFileHover();" onmouseout="OnFileUnhover();"><a href="#" id="mnuOpen" onclick="ExecuteFileCommand(&#39;mnuFile-Open&#39;)" onmouseover="focusme(this)" data-validcount="2"><span>開く(E)</span></a><a href="#" id="mnuGet" onclick="ExecuteFileCommand(&#39;mnuFile-Get&#39;)" onmouseover="focusme(this)" data-validcount="2"><span>取り出し(N)...</span></a><a href="#" id="mnuCheckOut" onclick="ExecuteFileCommand(&#39;mnuFile-COCI-CheckOut&#39;)" onmouseover="focusme(this)" data-validcount="2"><span>チェックアウト(U)... Ctrl+U</span></a><a href="#" id="mnuCheckIn" onclick="ExecuteFileCommand(&#39;mnuFile-COCI-CheckIn&#39;)" onmouseover="focusme(this)" data-validcount="2"><span>チェックイン(I)</span></a><a href="#" id="mnuCancelCO" onclick="ExecuteFileCommand(&#39;mnuFile-COCI-Cancel&#39;)" onmouseover="focusme(this)" data-validcount="2"><span>チェックアウト取消(C)</span></a><a href="#" id="mnuRevisions" onclick="ExecuteFileCommand(&#39;mnuTool-RevisionList&#39;)" onmouseover="focusme(this)" data-validcount="1"><span>履歴表示(H)</span></a></div>
+					                <table id="tblMnuSearch" style="display:inline-block;vertical-align:middle;margin:0 2px;border:1px solid #d7cfbb;" cellpadding="0" cellspacing="0">
+	<tr>
+		<td valign="bottom" style="line-height:1em;padding:0 1px;margin:0;">
+                                                <select size="1" name="rbLabel" id="rbLabel" style="font-family:MS UI Gothic;width:100px;">
+			<option selected="selected" value="0">すべてのラベル</option>
+			<option value="595">ウテナ_検証</option>
+			<option value="584">satakejuku</option>
+			<option value="565">佐竹Jリーグ</option>
+			<option value="546">Slackチャンネル</option>
+			<option value="555">Slack会話</option>
+			<option value="101">送付管理</option>
+			<option value="489">案件管理</option>
+			<option value="478">顧客情報管理</option>
+			<option value="446">GTデモ連絡書</option>
+			<option value="557">日報</option>
+			<option value="450">基本情報ラベル</option>
+			<option value="464">製品企画ラベル</option>
+			<option value="542">コイズミ</option>
+			<option value="452">試作依頼ラベル</option>
+			<option value="458">試作報告ラベル</option>
+			<option value="471">アイテム属性</option>
+			<option value="417">QRコード</option>
+			<option value="516">属性レイアウト表示設定</option>
+			<option value="57">バグ管理</option>
+			<option value="105">案件資料</option>
+			<option value="366">受領注文書</option>
+			<option value="103">電話受付</option>
+			<option value="96">ライセンス</option>
+			<option value="435">請求書管理</option>
+			<option value="438">保守契約リスト</option>
+			<option value="414">属性型テスト</option>
+			<option value="382">治具図面管理</option>
+			<option value="41">アイテムマスター</option>
+			<option value="310">xixi</option>
+			<option value="345">xixi2</option>
+			<option value="336">song</option>
+			<option value="247">大学キャンパス</option>
+			<option value="324">人工衛星</option>
+			<option value="308">ALL</option>
+			<option value="362">Wine</option>
+			<option value="359">Quotation</option>
+			<option value="374">Aoki_Test</option>
+			<option value="355">Product number</option>
+			<option value="317">文書</option>
+			<option value="236">AC_TESTA (1)</option>
+			<option value="210">Engliｓｈ</option>
+			<option value="212">英語</option>
+			<option value="141">開発文書</option>
+			<option value="119">KOラベル</option>
+			<option value="444">KOラベル2</option>
+			<option value="621">生産年数:検討・開発依頼書</option>
+			<option value="92">表示カスタマイズテスト</option>
+			<option value="492">D製番</option>
+			<option value="35">連絡書</option>
+			<option value="39">自動車</option>
+			<option value="208">自動車TEST</option>
+			<option value="217">自動車TEST (1)</option>
+			<option value="380">サムネイル指定</option>
+			<option value="84">テスト1</option>
+			<option value="205">yamamoto</option>
+			<option value="378">管理バグ</option>
+			<option value="45">テスト採番</option>
+			<option value="32">メンテナンス情報</option>
+			<option value="47">テスト（enami）</option>
+			<option value="512">テスト採番(enami)</option>
+			<option value="49">社員名簿</option>
+			<option value="80">高橋専用ラベル</option>
+			<option value="53">郵便番号</option>
+			<option value="117">郵便番号2</option>
+			<option value="55">Hラベル</option>
+			<option value="617">図面管理</option>
+			<option value="94">minTEST</option>
+			<option value="66">本</option>
+			<option value="143">test_test</option>
+			<option value="70">ラベルA</option>
+			<option value="72">おすすめランチ</option>
+			<option value="74">プライベートなラベル</option>
+			<option value="82">テスト（aoki）</option>
+			<option value="88">アクティビティ</option>
+			<option value="90">尾坂表示カスタマイズ</option>
+			<option value="115">尾坂zumen</option>
+			<option value="122">尾坂上場</option>
+			<option value="134">尾坂連絡書</option>
+			<option value="180">尾坂無制限文字数</option>
+			<option value="394">尾坂　全文検索</option>
+			<option value="410">尾坂品目</option>
+			<option value="475">尾坂図書管理</option>
+			<option value="506">尾坂郵便番号</option>
+			<option value="508">尾坂郵便番号2</option>
+			<option value="510">尾坂郵便番号3</option>
+			<option value="530">尾坂郵便番号4</option>
+			<option value="396">osaka ft</option>
+			<option value="113">技術統括部のフォルダ</option>
+			<option value="107">案件課題管理</option>
+			<option value="109">開発プロセス管理</option>
+			<option value="139">たけしま</option>
+			<option value="156">たけしま2</option>
+			<option value="161">観光地TEST_A</option>
+			<option value="171">観光地TEST_B</option>
+			<option value="151">天文台</option>
+			<option value="174">天体望遠鏡</option>
+			<option value="190">天体_星_Test</option>
+			<option value="284">星座とメシエ天体</option>
+			<option value="193">電車_Test</option>
+			<option value="198">電車_Test2</option>
+			<option value="202">電車_Test3</option>
+			<option value="238">電車_Test4</option>
+			<option value="219">AC_TEST7</option>
+			<option value="227">AC_TEST8</option>
+			<option value="225">AC_TEST9</option>
+			<option value="230">AC_TESTA</option>
+			<option value="280">AC_TESTB</option>
+			<option value="242">AC_TESTC</option>
+			<option value="245">AC_TESTD</option>
+			<option value="272">AC_TESTH</option>
+			<option value="282">AC_TESTJ</option>
+			<option value="290">AC_TESTU</option>
+			<option value="286">Ｌ_TEST1_多言語</option>
+			<option value="259">R_TESTA</option>
+			<option value="164">認識関連</option>
+			<option value="145">test_all</option>
+			<option value="147">品目</option>
+			<option value="168">サブ管理者権限テスト</option>
+			<option value="182">階層化</option>
+			<option value="188">初期値ラベル</option>
+			<option value="221">All Labels</option>
+			<option value="232">標準手配要望書</option>
+			<option value="234">標準手配要望書2</option>
+			<option value="253">132404</option>
+			<option value="266">手順書</option>
+			<option value="278">132792</option>
+			<option value="293">実験依頼書</option>
+			<option value="299">購入依頼書</option>
+			<option value="305">共通</option>
+			<option value="313">部品技術部_改善提案管理</option>
+			<option value="320">岡崎テスト</option>
+			<option value="326">岡崎自己紹介</option>
+			<option value="328">岡崎業務経歴</option>
+			<option value="330">岡崎ガンプラ</option>
+			<option value="339">必須ラベル</option>
+			<option value="347">新しいデータの依存関係をすぐにフォルダに反映する</option>
+			<option value="350">案件管理1</option>
+			<option value="357">都道府県</option>
+			<option value="364">情シス_インフラ</option>
+			<option value="390">型のテスト1</option>
+			<option value="392">型のテスト2</option>
+			<option value="398">サービス履歴</option>
+			<option value="400">大谷研修コース</option>
+			<option value="500">日本酒</option>
+			<option value="599">日本酒製番管理</option>
+			<option value="412">testmo</option>
+			<option value="419">ご当地</option>
+			<option value="473">新規追加0529</option>
+			<option value="496">v9test</option>
+			<option value="514">日本の山</option>
+			<option value="518">製品台帳</option>
+			<option value="526">製造管理</option>
+			<option value="532">出張申請書兼報告書</option>
+			<option value="535">ユーザ情報</option>
+			<option value="537">出張申請</option>
+			<option value="540">ADTEST</option>
+			<option value="544">設計変更</option>
+			<option value="559">コイズミ照明</option>
+			<option value="561">突き抜けA</option>
+			<option value="563">突き抜けB</option>
+			<option value="573">T1</option>
+			<option value="589">閲覧のみ</option>
+			<option value="591">編集できる</option>
+			<option value="606">SPEC</option>
+			<option value="608">実装検討</option>
+			<option value="613">パッケージ開発</option>
+			<option value="619">製品管理</option>
+
+		</select>
+                                            </td>
+		<td id="searchoption" style="line-height:1em;padding:1px;margin:0;"><span style="font-size:8pt;"><input id="rbFree" type="checkbox" name="rbFree" checked="checked" /><label for="rbFree">全文</label></span><span style="font-size:8pt;"><input id="rbAttr" type="checkbox" name="rbAttr" /><label for="rbAttr">全属性</label></span></td>
+	</tr>
+	<tr>
+		<td valign="bottom" colspan="2">
+                                                <input id="txtSearchCondition" style="width: 218px; height: 21px;vertical-align:bottom;margin-right:0; padding-right: 0px;" type="search" size="24"
+                                                    onfocus="setupAutocomplete(event.srcElement, '-1');" onblur="if (event != null) setTermHistory(event.srcElement, '-1');"
+					                            /><img id="mnuSearch" class="btn" src="i/search.gif" title="検索実行" onclick="onFormSubmit();" border="0" style="vertical-align:bottom;" />
+					                        </td>
+	</tr>
+</table>
+
+					                <script type="text/javascript">LoadSearchOption();</script>
+					                <table style="display:inline-block;vertical-align:middle;margin:0;" cellpadding="0" cellspacing="0">
+					                    <tr>
+					                        <td
+					                            ><img id="mnuLogout" title="ログアウト Alt+0" class="btn" src="i/off.ja.gif" onclick="return cmdLogOff_Click();" border="0" style="vertical-align:top;" /></td>
+					                    </tr>
+					                    <tr>
+					                        <td
+					                            ><img id="mnuHelp" class="btn" src="i/help.gif" title="ヘルプ Alt+7" onclick="return OnMenuClick(this);" border="0" style="" /><img id="mnuMainte" class="btn" src="i/mainte.gif" title="メンテナンス情報 Alt+8" onclick="return OnMenuClick(this);" border="0" style="" /><img id="mnuRefresh" class="btn" src="i/f5.gif" title="再描画 Alt+9" onclick="return OnMenuClick(this);" border="0" style="" /></td>
+					                    </tr>
+					                </table>
+					            </td>
+				            </tr>
+			            </table>
+		            </div>
+		            </td>
+		        </tr>
+		        <tr>
+		            <td>
+		                <table border="0" cellpadding="0" cellspacing="0" style="width:calc(100% - 4px);height:100%;">
+		                    <tr>
+		                        <td id="leftPane" rowspan=3 style="width:300px;height:100%;">
+			                        <iframe src="Folders.aspx" id="contents" name="contents" style="border:1px solid #d7cfbb;margin:0 2px;width:100%;height:100%;" frameborder="0" scrolling="no"></iframe>
+		                        </td>
+		                        <td valign="top" style="height:100%;position:relative;">
+                                    
+                                    <div id="conditionPane" style="height: 0; visibility: hidden;">
+			                        <iframe name="condition" id="condition" src="blank.htm" style="margin:0 2px;width:100%;height:100%; border-bottom-width: 0;" frameborder="0" scrolling="auto"></iframe>
+                                    </div>
+                                    <div id="rightPane" style="position:relative; height:100%;overflow:hidden;" onresize="OnRightPaneResize();">
+			                        <iframe name="main" id="main" src="empty.aspx" style="margin:0 2px;width:100%;height:100%; " frameborder="0" scrolling="auto"></iframe>
+                                    </div>
+		                        </td>
+		                    </tr>
+		                </table>
+		            </td>
+		        </tr>
+		    </table>
+			<div id="viewbtn" style="" onload="MoveViewButton();">
+			    <img id="v1" class="btn" src="i/v1.gif" onclick="return ChangeViewMode(1);" title="詳細" border="0" /><img id="v2" class="btn" src="i/v2.gif" onclick="return ChangeViewMode(2);" title="サムネイル&amp;属性" border="0" /><img id="v3" class="btn" src="i/v3.gif" onclick="return ChangeViewMode(3);" title="サムネイル" border="0" />
+			</div>
+            <div id="cnfwModalDialogFrame" title="" style="z-index:10000;"></div>
+		    <div id="sepPane" onmousedown="startDrag();" onmouseup="endDrag();" 
+		    style="position:absolute;width:10px;cursor:w-resize;background-color:Transparent;">&nbsp;</div>
+		    <div style="display:none">
+                <iframe name="work" style="position:absolute;left:0;top:0;width:100%;height:100px;" src="blank.htm" scrolling="no" noresize></iframe>
+                <iframe name="mainte" style="position:absolute;left:0;top:0;width:100%;height:100px;" src="getmainteinfo.aspx" scrolling="no" noresize></iframe>
+	            <iframe name="heartbeat" id="heartbeat" src="heartbeat.aspx" scrolling="no" noresize="yes"></iframe>
+	            <iframe name="dd3frame" id="dd3frame" src="dd3cmd.aspx" scrolling="no" noresize="yes"></iframe>
+                <input name="h1" type="hidden" id="h1" value="DBServer:SHIMBA UID:2 Name:test1 DName:テスト管理" />
+                <input name="p_CopySubFolder" type="hidden" id="p_CopySubFolder" />
+                <input name="p_CopyFolderPath" type="hidden" id="p_CopyFolderPath" />
+				<input name="p_Cut" type="hidden" id="p_Cut" />
+                <input name="FileButtonCommand" type="hidden" id="FileButtonCommand" value="mnuFile-Open" />
+                <input name="EasySearchFolderTid" type="hidden" id="EasySearchFolderTid" value="3051961" />
+				<input name="p_fids" type="hidden" id="p_fids" />
+                <input name="lastConditionPaneVisible" type="text" id="lastConditionPaneVisible" tyep="hidden" value="false" />
+                <input name="p_enableAutoComplete" type="hidden" id="p_enableAutoComplete" />
+                <input name="p_SAIndexMaxtermLength" type="hidden" id="p_SAIndexMaxtermLength" value="30" />
+                <input name="p_FullTextSearch" type="hidden" id="p_FullTextSearch" value="2" />
+                <input name="p_initWebSocket" type="hidden" id="p_initWebSocket" value="true" />
+                <script type="text/javascript">
+                    g_showcondition = $('#lastConditionPaneVisible').val();
+                </script>
+		    </div>
+            <div id="onloadscripts" style="display:none;">
+            </div>
+            <div id="custombuttons" style="display:none;">
+            </div>
+		
+<SCRIPT language='javascript'>m_isGUIEditMode=false;</SCRIPT><script language='javascript'>RegistButton('mnuFolder','i/btnFolder.ja.gif','i/btnFoldera.ja.gif','フォルダ Alt+X','i/btnFolderd.ja.gif','i/btnFolder.ja.gif',true)</script><script language='javascript'>RegistButton('mnuAttrSearch','i/btnSearch.ja.gif','i/btnSearcha.ja.gif','属性検索 Alt+Y','i/btnSearchd.ja.gif','i/btnSearch.ja.gif',true)</script><script language='javascript'>RegistButton('mnuEasyAttrSearch','i/btnEasySearch.ja.gif','i/btnEasySearcha.ja.gif','簡単検索 Alt+J','i/btnEasySearchd.ja.gif','i/btnEasySearchx.ja.gif',true)</script><script language='javascript'>RegistButton('mnuBom','i/btnBom.gif','i/btnBoma.gif','BOM Editor Alt+B','i/btnBomd.gif','i/btnBom.gif',true)</script><script language='javascript'>RegistButton('mnuCheckOutList','i/btnCL.ja.gif','i/btnCLa.ja.gif','編集状況 Alt+1','i/btnCLd.ja.gif','i/btnCL.ja.gif',true)</script><script language='javascript'>RegistButton('mnuApprovalList','i/btnAL.ja.gif','i/btnALa.ja.gif','承認状況 Alt+2','i/btnALd.ja.gif','i/btnAL.ja.gif',true)</script><script language='javascript'>RegistButton('mnuMailList','i/btnML.ja.gif','i/btnMLa.ja.gif','通知一覧 Alt+3','i/btnMLd.ja.gif','i/btnML.ja.gif',true)</script><script language='javascript'>RegistButton('mnuFile','i/btnFile.ja.gif','i/btnFilea.ja.gif','ファイル Alt+4','i/btnFiled.ja.gif','i/btnFile.ja.gif',true)</script><script language='javascript'>RegistButton('mnuProperty','i/btnProp.ja.gif','i/btnPropa.ja.gif','属性 Alt+5','i/btnPropd.ja.gif','i/btnProp.ja.gif',true)</script><script language='javascript'>RegistButton('mnuSearch','i/search.gif','i/searcha.gif','検索実行','i/searchd.gif','i/search.gif',true)</script><script language='javascript'>RegistButton('mnuHelp','i/help.gif','i/helpa.gif','ヘルプ Alt+7','i/helpd.gif','i/help.gif',true)</script><script language='javascript'>RegistButton('mnuMainte','i/mainte.gif','i/maintea.gif','メンテナンス情報 Alt+8','i/mainted.gif','i/mainte.gif',true)</script><script language='javascript'>RegistButton('mnuRefresh','i/f5.gif','i/f5a.gif','再描画 Alt+9','i/f5d.gif','i/f5.gif',true)</script><script language='javascript'>RegistButton('mnuLogout','i/off.ja.gif','i/offa.ja.gif','ログアウト Alt+0','i/offd.ja.gif','i/off.ja.gif',true)</script><script language='javascript'>RegistButton('v1','i/v1.gif','i/v1a.gif','詳細','i/v1d.gif','i/v1.gif',true)</script><script language='javascript'>RegistButton('v2','i/v2.gif','i/v2a.gif','サムネイル&属性','i/v2d.gif','i/v2.gif',true)</script><script language='javascript'>RegistButton('v3','i/v3.gif','i/v3a.gif','サムネイル','i/v3d.gif','i/v3.gif',true)</script><script language='javascript'></script>
+<script type="text/javascript">
+<!--
+
+var callBackFrameUrl='/FullWEB/WebResource.axd?d=beToSAE3vdsL1QUQUxjWdRAZwVyFNGktB-5FX4sPJJnLyjsQkRW9hbwjQ2x0wRVvdSEqXlYiO2RLvnZqzPjp4Q2&t=637461305481343508';
+WebForm_InitCallback();// -->
+</script>
+</form>
+	</body>
+</html>

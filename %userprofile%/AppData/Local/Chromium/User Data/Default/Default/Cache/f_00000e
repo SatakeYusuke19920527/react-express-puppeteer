@@ -1,0 +1,706 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head id="hhd"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>
+	ファイル一覧
+</title><meta content="Microsoft Visual Studio .NET 7.1" name="GENERATOR"><meta content="Visual Basic .NET 7.1" name="CODE_LANGUAGE"><meta content="JavaScript" name="vs_defaultClientScript"><meta content="http://schemas.microsoft.com/intellisense/ie5" name="vs_targetSchema"><link href="chronos.css" type="text/css" rel="stylesheet" /><link href="UserCss/ExFileList.css" type="text/css" rel="stylesheet" /><link href="FileList.css" type="text/css" rel="stylesheet" />
+        <script src="Scripts/jquery-1.7.1.min.js" type="text/javascript"></script>
+        <script src="Scripts/jquery-ui.min.js?v=jquery-ui-1.2.1" type="text/javascript"></script>
+		<script type="text/javascript" src="./help.js?v=9.6.28"></script>
+		<script type="text/javascript">
+		    var _fww = true;
+		    var errUnExpected = "コマンド実行で予期せぬエラー";
+            var mnuApproval = "承認";
+            var mnuApprovalList = "承認状況";
+            var mnuApprovalRequest = "依頼... Ctrl+G";
+            var mnuBom = "Bomの表示";
+            var mnuCancelCheckOut = "チェックアウト取消";
+            var mnuCancelRequest = "取消 Ctrl+D";
+            var mnuCheckIn = "チェックイン";
+            var mnuCheckOut = "チェックアウト";
+            var mnuCheckOutList = "編集状況";
+            var mnuCOCI = "チェックアウト/チェックイン";
+            var mnuCustomizeHeader = "表示項目のカスタマイズ";
+            var mnuDelete = "削除 DEL";
+            var mnuDeleteAg = "分類ラベル削除";
+            var mnuExportCSV = "CSV出力...";
+            var mnuAttach = "割り当て";
+            var mnuAttachThumbnail = "サムネイル";
+            var mnuAttachPDF = "PDF";
+            var mnuAttachStatus = "状況";
+            var mnuOpen = "開く";
+            var mnuGet = "取り出し...";
+            var mnuImageView = "イメージ表示";
+            var mnuImportCSV = "CSV入力...";
+            var mnuArbitrarySizeImageView = "イメージ表示（任意サイズ）";
+            var mnuLink = "親子関係";
+            var mnuMailList = "通知一覧";
+            var mnuPermission = "権限設定";
+            var mnuProperty = "属性表示/編集...";
+            var mnuRefresh = "最新の情報に更新";
+            var mnuRemoveFromWork = "マークをはずす... Ctrl+Y";
+            var mnuRename = "名前変更 F2";
+            var mnuRevList = "履歴表示...";
+            var mnuSelectAll = "すべて選択";
+            var mnuSend = "作業用マーク";
+            var mnuSendWork = "マークをつける... Ctrl+X";
+            var mnuSetLinkChild = "子に設定...";
+            var mnuSetLinkParent = "親に設定...";
+            var mnuShowChildLink = "子を表示...";
+            var mnuShowParentLink = "親を表示...";
+            var mnuShowMailNow = "通知Now";
+            var mnuAttrSearch = "属性検索";
+            var mnuFolderG = "分類フォルダ";
+            var mnuFolderS = "よく使う検索フォルダ";
+            var mnuFolderM = "マークフォルダ";
+            var mnuHelp = "HELP";
+            var mnuTool = "ツール";
+            var mnuView = "表示";
+            var mnuAutoNo = "採番...";
+            var mnuAccessLog = "アクセスログ閲覧画面起動";
+            var msgInvalidFileNameChar = "ファイル名に次の文字は使えません";
+            var msgInvalidFileNameCharTitle = "ファイル名入力文字の確認";
+            var msgItemExist = " $1 個のオブジェクト";
+            var msgItemExistOverLimit = " $1 個のオブジェクト (検索結果の最大数を超えています)";
+            var msgItemSelected = " $1 個のオブジェクトを選択";
+            var msgAllItemSelected = "すべて( $1 個)のオブジェクトを選択";
+            var strBookView = "ブック";
+            var strDetail = "詳細";
+            var strSliderView = "スライダ";
+            var strSummaryView = "サムネイル&属性";
+            var strThumbnailView = "サムネイル";
+            var msgInputNewFileName = "新しいファイル名を入力して下さい。";
+            var msgConfirmChangeExtension = "ファイルの拡張子を変更するとファイルが正常に開けなくなる可能性があります。\n続行しますか？";
+            var msgConfirmChangeExtensionTitle = "名前変更の確認";
+            var msgConfirmCancelCO = "'$1'のチェックアウトを取り消してもよろしいですか？";
+            var msgConfirmCancelCOMulti = "これらの$1個のファイルのチェックアウトを取り消してもよろしいですか？";
+            var msgConfirmCancelCOTitle = "チェックアウト取り消しの確認";
+            var msgConfirmRemoveFromWork = "'$1'の'$2'マークを外してもよろしいですか？";
+            var msgConfirmRemoveFromWorkMulti = "これらの$1個のファイルの'$2'マークを外してもよろしいですか？";
+            var msgConfirmRemoveFromWorkTitle = "マークを外す";
+            var msgNoFilesSelected = "ファイルが選択されていません。";
+            var msgNoFilesSelectedTitle = "選択ファイルの確認";
+            var msgConfirmDeleteFile = "'$1'を削除してもよろしいですか？";
+            var msgConfirmDeleteFileTitle = "ファイル削除の確認";
+            var msgConfirmDeleteFileMulti = "これらの$1個のファイルを削除してもよろしいですか？";
+            var msgConfirmDeleteFileMultiTitle = "複数ファイル削除の確認";
+            var msgFileDeleting = "選択ファイル削除中...";
+            var msgConfirmDeleteAg = "'$1'に設定された分類ラベル[$2]を削除してもよろしいですか？\n他の分類ラベルが設定されていない場合、ファイルも削除されます。";
+            var msgConfirmDeleteAgMulti = "これらの$1個のファイルに設定された分類ラベル[$2]を削除してもよろしいですか？\n他の分類ラベルが設定されていない場合、ファイルも削除されます。";
+            var msgConfirmDeleteAgTitle = "分類ラベル削除の確認";
+            var msgAgDeleting = "分類ラベル削除中...";
+            var msgInputAutoNoCount = "発番個数を入力してください。";
+            var StrFolderPersonalWork = "マーク";
+            var StrFolderSharedWork = "共有マーク";
+            var StrFolderPersonalVirtual = "よく使う検索";
+		    var StrFolderSharedVirtual = "共有よく使う検索";
+		    var errOverFiles = "ファイル数が多すぎます。\n$1件まで選択可能です。";
+		    var msgCopyURLTitle = "URLコピー";
+            var errOverLimitForCoFmt = "チェックアウトは$1ファイル以上を選択して実行できません。";
+            var errOverLimitForCiFmt = "チェックインは$1ファイル以上を選択して実行できません。";
+            var regSumAttr = "\\s\\s\\[.+\\]の合計：.*[0-9,]+\\.?\\d*.*";
+            var msgUpdating = "更新中…";
+
+		    function igmenu_mouseover(table, evnt, viaMouse) { }
+		    function igtree_mouseover(evnt, tn) { }
+		    function igtbar_mouseOver(src, evnt, enabled) { }
+
+			function CheckCond()
+			{
+                window.parent.UpdateSearchCondition();			    
+			}
+			function HideSearchCondition()
+			{
+			    window.parent.SetSearchCondition("");
+			    window.parent.UpdateSearchCondition();
+			}
+			function CheckEnabled() {
+				return IsEnabled("D007");
+			}
+			function registerFile(shift, path) {
+				var enpath = encodeURI(path);
+				document.workFrame.location.href = "entry.aspx?s=" + shift + "&p=" + enpath
+			}
+            //  ドラッグスタート
+			function fdragstart(event) {
+			    var draggableObjects = [];
+			    var n = SaveSelectedFiles();
+			    if (n == 0) {
+			        draggableObjects.push($(this).attr('data-fid'));
+			    }
+			    event.dataTransfer.effectAllowed = 'all';
+			    event.dataTransfer.dropEffect = 'none';
+			    var fids = document.getElementById("Fids").value;
+
+			    //if dragg starts and there is no multiselection add just the current id to the draggableObjects array
+			    if (draggableObjects.length == 0) {
+			        draggableObjects.push(fids);
+			    }
+
+			    //attach draggable ids to current event
+			    event.dataTransfer.setData('Text', draggableObjects.join(","));
+			    //reset draggable ids 
+                draggableObjects.length = 0;
+			}
+            //  左端のアイコンクリックで行選択（背景色変更になるように）
+			function iconUp(event) {
+			    try {
+			        var $tr = $(event.srcElement).closest('tr');
+			        if ($tr.css("background-color") == "#3d80df") {
+			            cancelEv();
+			            return;
+			        }
+			        var tr = $tr.get(0);
+			        if (event.shiftKey)
+			            tr_click(tr, "range");
+			        else if (event.ctrlKey)
+			            tr_click(tr, "toggle");
+			        else {
+			            tr_click(tr, "set");
+			        }
+
+			        cancelEv();
+			    } catch (e) { }
+			    return false;   
+			}
+			function iconClicked(event) {
+			    try {
+
+			        cancelEv();
+			    } catch (e) { }
+			    return false;
+            }
+            var total;
+            var current;
+            var ready;
+            var files = new Array();
+            var davname = new Array();
+            var rtpath;
+            var upstat;
+            var alreadyloaded = new Array();
+            var loadedcount;
+            var sock;
+            var shift;
+            var targetclicktimer;
+
+            function init() {
+                console.log("FileList init");
+                
+
+            }
+            function UUU_Start(path) {
+                //alert("UUU_Start");
+                if (sock == undefined) {
+                    wsoc();
+                }
+                var dlflag = document.getElementById("deleteLocal");
+                var dlstring;
+
+                dlstring = "false";
+                if(dlflag.value == "true") //ここは代入側にLowerありなので、小文字比較でOK
+                    dlstring = "true";
+
+                //cnfw_EntryFiles2(window.parent.g_entryform, shift, GetActiveFolder, window.top, caller);
+                var target = document.getElementById("link");
+                var sid = localStorage.getItem("SID");
+                target.href = "connected:;command=upload;id="+sid+";fpath=" + path +";delete=" + dlstring;
+                target.click();//upload
+                //cnfw_EntryFiles2("entry.aspx", "0", "", window.top, "1");
+            }
+            function clearcurrent(){
+                current = 1;
+            }
+
+            function NextFile() {
+                var tmpnext;
+                if (current > total) {
+                    tmpnext = "/end/";
+                    return tmpnext;
+                }
+                tempnext = files[current];
+                current = current + 1;
+                //upstat = 0;
+                return tempnext;
+            }
+            function SSS_dropname(name) {
+
+            var filename;
+            var prename;
+            filename = name;
+            prename = files[ready];
+            if (prename != filename)
+                ready += 1;
+            files[ready] = name;
+            if (ready == total) {
+                 cnfw_EntryFiles2("entry.aspx", shift, "", window.top, "1");
+                //doUpload();
+            }
+        }
+        function SSS_uploadfile(name) {
+            upstat = name.slice(-3);
+            if (upstat == "100") {
+                
+                switch ( name.slice(0, name.length - 4)) {
+				    case "-1":
+                        davname[loadedcount] = '/' + '予期せぬエラー' ;     //予期せぬエラー
+                        break;
+                    case "-3":
+                        davname[loadedcount] = '/' + 'ファイルの読み込みに失敗';  //ファイルの読み込みに失敗
+                        break;
+                    case "-88":
+                        davname[loadedcount] = '/' + '複数フォルダやフォルダとファイルを混合しての登録はできません';  //複数フォルダまたはフォルダとファイルの混合DROP
+                        break;
+                    case "-100":
+                        davname[loadedcount] = '/' + 'ネットワーク障害によりファイル転送に失敗';   //ネットワーク障害によりファイル転送に失敗
+                        break;
+                    case "-101":
+                        davname[loadedcount] = '/' + 'ファイル転送コントロールの初期化に失敗';    //ファイル転送コントロールの初期化に失敗
+                        break;
+                    default:
+                        davname[loadedcount] = name.slice(0, name.length - 4);
+                        break;
+                }
+                
+                alreadyloaded[loadedcount] = 0;
+                loadedcount += 1;
+                //var ufilename = document.getElementById("ufilename");
+                //ufilename.innerText = davname[loadedcount-1];
+                //var targetlist = document.getElementById("listid");
+
+                //var liele = document.createElement("li")
+
+                //liele.innerHTML = davname[loadedcount-1];
+               // targetlist.appendChild(liele);
+
+            }
+        }
+        function SSS_dropnumandpoint(num, rootpath) {
+            //var shift;
+            var caller;
+            var w;
+            var pkind;
+
+            rtpath = rootpath;
+            total = num;
+            current = 1;
+            loadedcount = 1;
+            ready = 0;
+            if (total > 0) {
+                files[0] = "100";
+                upstat = 0;
+                //shift = dropkey;
+                //pkind = Split(GetCurrentFolder,"\")(0)
+                caller = 1;
+                //cnfw_EntryFiles2("entry.aspx", "0", "", window.top, "1");
+                //cnfw_EntryFiles2 parent.g_entryform, shift, GetActiveFolder,window.top,caller
+            }
+        }
+        function wsoc() {
+            var sname = localStorage.getItem('SERVERNAME');
+            sock = new WebSocket('wss://'+sname+':5001');
+            console.log("WSOC at FileList.aspx");
+            var args;
+            var aore;
+            var kind;
+            var paranum;
+            var args;
+            var params = new Array();
+            var i;
+            // 接続
+            sock.onopen= function (e) {
+                console.log('Socket 接続成功');
+                //sock.send('R,1125,computername');
+                var sid = localStorage.getItem("SID");
+                sock.send('R|' + sid + '|ANY');
+
+            }
+
+            // サーバーからデータを受け取る
+            sock.addEventListener('message', function (e) {
+                console.log(e.data);
+                //var computername = document.getElementById("computername");
+                //computername.innerText = e.data;
+                //sock.close();
+                args = e.data.split('|');
+                aore = args[0];
+                rid = args[1];
+                kind = args[2];
+                paranum = args[3];
+                
+                for (i = 0; i < paranum; i++) {
+                    params[i] = args[4 + i];
+                    console.log(i,params[i])
+                }
+                if (aore == "E") {
+                    switch (kind) {
+                        case "dropname":
+                            SSS_dropname(params[0]);
+
+
+                            break;
+
+                        case "uploadfile":
+                            SSS_uploadfile(params[0]);
+                                                        break;
+                        case "dropnumandpoint":
+                            if (params[0] == 0) {//　ファイル選択ダイアロつのX閉じを意味する
+                                sock.close();
+                            }
+                            SSS_dropnumandpoint(params[0], params[1]);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else {
+                    if (kind == "close") {
+                        sock.close();
+                    }
+                }
+
+            });
+            sock.onclose = function () {
+                console.log('Socket 切断');
+            }
+           
+            }
+            function GetActiveFolder() {
+                var fdr;
+                var Gtemp;
+                fdr = parent.g_activepath;
+                switch (fdr) {
+                case StrFolderPersonalWork:
+                case StrFolderSharedWork:
+                case StrFolderPersonalVirtual:
+                case StrFolderSharedVirtual:          //"個人ワーク","共有ワーク", "共有バーチャル","個人バーチャル"
+                    Gtemp = fdr;
+                    break;
+                default:
+                    Gtemp = fdr;
+                        break;
+
+                }
+                return Gtemp;
+            }
+            function GetCurrentFolder(){
+                return parent.g_currentpath;
+            }
+			
+            function GetTotal() {
+                return total;
+            }
+            function GetCurrent() {
+                return current;
+            }
+            function GetDavName(num) {
+                console.log(num + ":" + davname[num]);
+                return davname[num];
+                //return davname;
+            }
+            function RootPath(){
+                return rtpath;
+            }
+            function UploadStat() {
+               
+                console.log("UPSTAT: "+upstat+"% "+current+"/"+total);
+                if (current > total) {
+                    console.log("UPSTAT:FIX100%")
+                    return 100;
+                }
+                //if (current > ready) {
+                //    console.log("UPSTAT: 0%")
+                //    return 0;
+                //}
+                return upstat;
+            }
+            function handleDragOver(evt) {
+                evt.stopPropagation();
+                evt.preventDefault();
+                evt.dataTransfer.dropEffect = 'copy';
+            }
+
+            function handleDragEnter(evt) {
+                try {
+                    if (evt.dataTransfer.types[0] != 'Files')
+                        return;
+                } catch (e) {
+                    console.log(e.message);
+                    return;
+                }
+
+                document.getElementById("DDBar").style.backgroundColor = "#ffd700";
+                setTimeout(resumeColor, 2000);
+            }
+
+            function execDrop(evt) {
+              evt.stopPropagation();
+              evt.preventDefault();
+              if (sock == undefined) {
+                    wsoc();
+              }
+              var files = evt.dataTransfer.files;
+
+              var output = [];
+              var para1 = "";
+                var dlflag = document.getElementById("deleteLocal");
+                var dlstring;
+                if(evt.shiftKey == true){
+                    shift = 1;
+                }
+                dlstring = "false";
+                if(dlflag.value == "true") //ここは代入側にLowerありなので、小文字比較でOK
+                    dlstring = "true";
+
+                //消してよいかどうかの判定は、DBオプションとさらに、どのフォルダへの登録かも加味する。
+
+
+
+                 for (var i = 0; i < files.length; i++) {
+                  para1 += files[i].name + "|" + files[i].size + "|" + files[i].lastModifiedDate.toLocaleTimeString() + "|";
+                }
+                var target = document.getElementById("link");
+                var sid = localStorage.getItem("SID");
+                var loc = localStorage.getItem("LOC");
+                var commandstr = 'connected:;command=CheckInatMain;value='+para1+';id='+sid +';delete=' + dlstring;
+                if(commandstr.length > 600){
+                    target.href = 'connected:;command=CheckInatMain;value=overmax'+";id="+sid+';delete=' + dlstring;
+                }else{
+                    target.href = commandstr;
+                }
+                setTimeout(targetclick, 100);
+                //target.click();//CheckInatMain
+            }
+
+            function targetclick() {
+                if (sock.readyState != 0) {
+                    clearTimeout(targetclicktimer);
+                    var target = document.getElementById("link");
+                    target.click();
+                    return;
+                }
+                targetclicktimer = setTimeout(targetclick, 100);
+            }
+
+
+
+
+
+
+			function DeleteCD(){
+				//document.getElementById("SSS").expire document.getElementById("CDValidDate").value
+                var target = document.getElementById("link");
+                var sid = localStorage.getItem("SID");
+                var loc = localStorage.getItem("LOC");
+
+                target.href = 'connected:;command=expire;value='+document.getElementById("CDValidDate").value+";id="+sid+";wtitle="+loc;
+                target.click();//expire
+			}
+            function EntryTitle(n) {
+                total = n;
+                current = 1;
+                ready = 0;
+                files[0] = ".100";
+                upstat = 0;
+                shift = 1;
+                for (var i = 1; i <= n; i++) {
+                    files[i] = "T-" + document.getElementById("uid").value + "-" + n;
+                    davname[i] = files[i];
+                }
+
+                var enpath = encodeURI(GetActiveFolder());
+                var p = new Array();
+                cnfw_loadWinPosition("entry", p);
+                var w = window.open(parent.g_entryform + "?s=" + shift + "&caller=&p=" + enpath, "_blank", "left=" + p[0] + ",top=" + p[1] + ",width=" + p[2] + ",height=" + p[3] + ",resizable=yes,dependent=yes,scrollbars=no,status=yes", true);
+                parent.AddWindow(w, "entrywin");
+            }
+            function EntryOnTitle(fname) {
+                total = 1;
+                current = 1;
+                ready = 0;
+                files[0] = ".100";
+                upstat = 0;
+                shift = 1;
+                files[1] = fname;
+                davname[1] = files[1];
+
+                var enpath = encodeURI(GetActiveFolder());
+                var p = new Array();
+                cnfw_loadWinPosition("entry", p);
+                var w = window.open(parent.g_entryform + "?s=" + shift + "&caller=&p=" + enpath, "_blank", "left=" + p[0] + ",top=" + p[1] + ",width=" + p[2] + ",height=" + p[3] + ",resizable=yes,dependent=yes,scrollbars=no,status=yes", true);
+                parent.AddWindow(w, "entrywin");
+            }
+        </script>
+        <script type="text/javascript" src="./shFw_Layout.js?v=9.6.28"></script>
+		<script type="text/javascript" src="./cmdFileList.js?v=9.6.28"></script>
+		<script type="text/javascript" src="./FullWeb.js?v=9.6.28"></script>
+		<script type="text/javascript" src="./ExCmdFileList.js?v=9.6.28"></script>
+
+
+        <link rel="stylesheet" href="UserCss/jquery-ui.min.css" /><link rel="stylesheet" href="UserCss/jquery-ui-1.12.1.min.css" />
+        <style type="text/css">
+            body {
+                height: 100vh;
+            }
+            .ui-menu {
+                background-color: #eee;
+                font-family: 'MS Gothic';
+                font-size: 9pt;
+                line-height: 10px;
+                min-width: 175px; 
+                border: outset 2px;
+            }
+            .ui-menu-item {
+                position:relative;
+            }
+            .ui-menu-item a {
+                text-decoration:none;
+                border: none;
+                outline: none;
+                white-space: nowrap;
+                height: 100%;
+            }
+            .ui-menu-item a:hover {
+                background-color: #3D80DF;
+                color: #fff;
+            }
+            .ui-dialog-titlebar {
+                min-height: 24px;
+            }
+            button.refbtn {
+                background-color:transparent;
+                border:0px;
+            }
+
+        </style>
+        <style type="text/css">
+            .ui-dialog-titlebar {padding: 1em;}
+            .ui-dialog-titlebar {font-size: small;}
+        </style>
+	<link id="help" href="help/index.htm" rel="help" /></head>
+	<body id="BBB" class="clMain" ondragover="handleDragOver(event);" ondrop="execDrop(event);" ondragenter="handleDragEnter(event);" onresize="setWinSize();" onmousemove="onDragging();" onload="init();ReloadWork();CheckCond();" onclick="window.parent.HideMenu(&#39;mnuFilePopup&#39;);">
+		<form name="frmresult" method="post" action="./FileList.aspx?pemp=true" id="frmresult" onsubmit="return Form_Submit();">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="IAkicbF0mAm/vRHj8K+CKMCZ8Anc9hQsJ9ApGfhLhhm/a/MTSS19RahlBu6l+txJ/NQ8CD2F8XbZHdqnSIzPyjeOzkMK02LDdSSRdmACHMS4R5i6rt/BuUNdbVQfN5XG5GuRTesGuVWRXlasm2U5EyyTatIvdyOjoedUW18R6etGl2dE4epUSXIofIiqjxRVM89WMRDUMzKcRZvim+h46ZKN8lG5sGCEYU9kKrQWzTV3zVTolinsCszkWKueLftls9RM6ojh+U4DP/3bfR2EvOdF/tjIwlTvwBcKIknNAWYBhUfdinZe7YPHhLuAukyStbw2UZnJRkxL5/7uP13V5VxrD+JFj+IdaE7sfIM2MV8Yv6N0wOey29QCvRsjenAsYVa8/jNd3D8dnK7/0xSPrSF6RJv4ebdmxwoW9KTCZQVMnAwgjLV/2te3fjWKvDWfXweErVRzArRacy4r6D5Nk81lf0kDGjDbFmu0GTfdfQ0CfbmmMaHatJyCjYmQJ8DVoZPjHWPxHwSByY2GcqDLOPzd0w0x4N+tefV8HFXUEeZXV4bnmk2QOuOQbLG/4ZRijd63NPZ3IEKZ3O7Uz/Gw8cWahG5+Mupukkdk8LuuRVB070KuR+Cv/iHxg/p2YNPl" />
+
+<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="5271264E" />
+<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="5Rqnqtac844sw/a9GT7t3TnWDFA56QceK7EzbGChF0HzNcxSJARCEirzH5P7d4EDwAVJoEwsw1fd3ElN5IYMu33D0pxF1cHRU1xHLIEDzdaVnQ9g/kcJI/P2CglOCWmgSi4MIzb7Wq/7YvgKRouxbRj6tzTJILbxZ2jtmh3jE5RhEPLNimLHHwUbsWl3sGWU91VVQ7aRAeFWmIBDOpEQDP/kDgyT4zD7ecgauG2u+pcWpkhZsBE+fHo6NjotOwBYmf+JQB96cZGaMo1nzDrNDB6XrmV36e2VAYts/2d54Nk8YoyaPXEEeeDoA3wHvo3u/Ij4s1BHk/kpz2W54EgnGzz+IWI6LoS/x8nU6aYmCyeB8cFvQ61LRvY1Kv1NK52FEGeWAxJGqcwoaedR3RkAb0TEveSDdj82ElElWzkf/1KzUcakmMCXGjzihnoX0ebUqo/O4ARgGshNvwB90xzt29wnBeWZOx5Ee+yYA3fx450DS8zQwoSr6zR0cruDlMjN1970VLRb3c5lNLqD1S+fOQ==" />
+            
+			<table id="DropFrame" cellspacing="0" cellpadding="0" width="100%" border="0" onmouseup="thup();window.parent.HideMenu('mnuFilePopup');"　
+				onmousemove="thmove();" onmousedown="thdown();"">
+				<tr style="background-color:#D3E4F9;text-align:right;">
+					<td style="width:100%;position:relative;height:20px;border-bottom: #d7cfbb 1px solid;" id="DDBar"><span id="mes" onclick="HideSearchCondition();" style="display:block;text-align:left;padding:0 4px;font-size:small;font-family:MS Gothic;color:black;cursor:pointer;"></span><span id="DD3"></span></td>
+                    <td id="tdRefEntry" style="width:36px;"><button id="F005BU1000_refBtn" title="ファイルを選択して登録します" type="button" class="refbtn"><img src="i/folder.png" alt=""/></button></td>
+
+					<td style="border-bottom: #d7cfbb 1px solid;width:80px;"><select name="ddlPage" id="ddlPage" onmouseover="ShowHelp(&#39;ddlPage&#39;)" style="height:22px;" onchange="SaveSelectedFiles();CommandPostback(&quot;view&quot;);">
+	<option value="10">10件ずつ</option>
+	<option value="50">50件ずつ</option>
+	<option value="100">100件ずつ</option>
+	<option selected="selected" value="500">500件ずつ</option>
+	<option value="0">すべて</option>
+</select>
+					</td>
+					<td id="pnavi" style="border-bottom: #d7cfbb 1px solid;padding-right: 6px; padding-left: 6px; font-size: 8pt; color: black; padding-bottom: 0px; cursor: default; padding-top: 0px; text-align: right" onclick="navi();"></td>
+
+				</tr>
+				<tr style="position:relative" valign="top">
+					<td id="viewarea" oncontextmenu="return DivOnPopup();" colspan="4" style="height:calc(100vh - 25px)">
+                        <div id="ivframe" style="display:none;" onclick="return ClearSelection();">
+							
+							<div id="bsviewer" style="display:none;">
+							</div>
+						</div>
+						<table id="gd" cellspacing="0" cellpadding="0" border="0">
+	<tr style="height: 1px" onclick="thclick();">
+		<td style="overflow: hidden; width: 100%">
+										<div id="ghd"></div>
+									</td>
+	</tr>
+	<tr onclick="tbclick();" ondblclick="tbdbl();">
+		<td style="width: 100%; height: 100%">
+                                        <div id="gridframe" style="width: 100%; height: 100%">
+										    <div id="grid" onscroll="SyncScroll();">
+											    
+										    </div>
+                                        </div>
+									</td>
+	</tr>
+</table>
+
+						<div id="sep"></div>
+					</td>
+				</tr>
+			</table>
+            <div style="position:absolute;top:0;left:40px;height:0;z-index:10000;" id="context">
+            </div>
+            <div id="clipWork" style="position:absolute;z-index:-1;right:0;bottom:0;width:10px;height:10px;overflow:hidden;"></div>
+			<input type="hidden" name="FileName"/> <input name="Fids" type="hidden" id="Fids" />
+			<input type="hidden" id="Widths"/> <input name="pageindex" type="hidden" id="pageindex" value="1" />
+			<input name="gdop" type="hidden" id="gdop" /> <input name="sortcol" type="hidden" id="sortcol" />
+			<input name="scleft" type="hidden" id="scleft" value="0" /> <input name="fcount" type="hidden" id="fcount" value="0" />
+			<input name="dmode" type="hidden" id="dmode" value="5" /> <input name="vmode" type="hidden" id="vmode" value="5" />
+			<input name="pno" type="hidden" id="pno" /><input name="agname" type="hidden" id="agname" value="0" />
+			<input name="ro" type="hidden" id="ro" value="0" />
+            <input name="DblClickCommand" type="hidden" id="DblClickCommand" value="mnuFile-Property" />
+            <input name="DeleteCommandCaption" type="hidden" id="DeleteCommandCaption" value="削除 DEL" />
+            <input name="IsReadOnlyFlg" type="hidden" id="IsReadOnlyFlg" value="False" />
+            <input name="PDMExpandLevelF" type="hidden" id="PDMExpandLevelF" value="-1" />
+            <input name="PDMExpandLevelB" type="hidden" id="PDMExpandLevelB" value="-1" />
+            <input name="CDValidDate" type="hidden" id="CDValidDate" value="20210406" />
+            <input name="uid" type="hidden" id="uid" value="2" />
+            <input name="deleteLocal" type="hidden" id="deleteLocal" value="false" />
+            <iframe src="blank.htm" id="workFrame" name="iframe" style="display:none"></iframe>
+            <iframe src="bom.aspx?skip=true" id="bomframe" name="bomframe" style="display:none"></iframe>
+            <div id="cnfwModalDialogFrame" title="" style="z-index:10000;"></div>
+            <div id="onloadscripts" style="display:none;">
+            <a id="link" href="connected:;command=upload;filepath=c:\\davtmp\\"></a>
+            </div>
+        
+<SCRIPT language='javascript'>m_isGUIEditMode=false;</SCRIPT><script language='javascript'>try{__igmenu_mouseover = igmenu_mouseover;igmenu_mouseover = function (table, evnt, viaMouse) {__igmenu_mouseover(table, evnt, viaMouse); var item; try{item = igmenu_getTblRow(evnt)} catch(e){return;};if (!item) return; var tag = item.getAttribute('igTag');if (!tag) return; var s = tag.split(',');if (s.length > 1) {tag = s[1];} if (IsHelpMode()) ShowHelp(tag);}} catch(e) {}try{__igtree_mouseover = igtree_mouseover; igtree_mouseover = function(evnt,tn) { __igtree_mouseover(event,tn);if (IsHelpMode()) ShowHelp(tn);}	}catch(e) {}try{__igtbar_mouseOver = igtbar_mouseOver; igtbar_mouseOver = function(src,evnt, enabled) { __igtbar_mouseOver(src, evnt, enabled);var b=igtbar_getItemById(src.id);if (b && b.Tag) {var tag = b.Tag ;if (IsHelpMode()) ShowHelp(tag);}} }catch(e) {}</script><SCRIPT language='javascript'>SetEntryForm('entry.aspx');</SCRIPT><SCRIPT language='javascript'>UpdateMessage(unescape(''), false);</SCRIPT></form>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $('#onloadscripts p').each(function (e) {
+                    $.getScript($(this).text(), null);
+                });
+                $('.sep').dblclick(function () {
+                    var index = $(this).index() + 3;
+                    var w = 10;
+                    var hasNobr = false;
+                    $('td:nth-child(' + index + ')', '#grid').each(function () {
+                        var $nobr = $('nobr', $(this)).first();
+                        if ($nobr.length == 0) return;
+                        hasNobr = true;
+                        var dw = $nobr.width();
+                        if (dw > w) w = dw;
+                    });
+                    if (!hasNobr) return;
+                    setColumnWidth(this, w + 5);
+                });
+                $('#F005BU1000_refBtn').on('click', function () {
+                    UUU_Start("c:\\davtmp\\");
+                });
+                $('#F005BU1000_refBtn').on('mouseover', function () {
+                    $(this).css('background-color', '#F0F0F0');
+                });
+                $('#F005BU1000_refBtn').on('mouseleave mouseup', function () {
+                    $(this).css('background-color', 'transparent');
+                });
+                $('#F005BU1000_refBtn').on('contextmenu', function () {
+                    if (m_isGUIEditMode) {
+                        SetButtonEnabled('F005BU1000_refBtn', 'F005BU1000_refBtn');
+                    }
+                    return false;
+                });
+                try {
+                    var args = cnfw_parseParam();
+                    if (args['pemp'] == 'true') {
+                        //  フォルダ右クリックからきた
+                        return;
+                    }
+                    var cnt = parseInt($("#fcount").val(), 10);
+                    cnt = Math.abs(cnt);
+                    parent.contents.updateFolderCount(parent.g_activepath, cnt);
+                } catch (e) { }
+            });
+        </script>
+	</body>
+</html>

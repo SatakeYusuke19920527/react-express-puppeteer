@@ -1,0 +1,498 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+		<title>work</title>
+		<meta content="Microsoft Visual Studio .NET 7.1" name="GENERATOR" />
+		<meta content="Visual Basic .NET 7.1" name="CODE_LANGUAGE" />
+		<meta content="JavaScript" name="vs_defaultClientScript" />
+        <script src="Scripts/jquery-1.7.1.min.js" type="text/javascript"></script>
+		<meta content="http://schemas.microsoft.com/intellisense/ie5" name="vs_targetSchema" />
+		<script type="text/javascript" src="./FullWeb.js?v=9.6.28"></script>
+		<script type="text/javascript">
+		<!--
+		    var _fww = true;
+		    var winGetStat;
+            var _w = new Array();
+            var multifname = "";
+            var multikey = "";
+            var sock_local;
+
+            function wsoc_local(path, fname, key, nextexist, bopen) {
+                console.log("wsoc_local at work");
+                var sname = localStorage.getItem('SERVERNAME');
+                //sock_local = new WebSocket('ws://127.0.0.1:8080');
+                sock_local = new WebSocket('wss://' + sname + ':5001');
+                var args;
+                var aore;
+                var rid;
+                var kind;
+                var paranum;
+                
+                var params = new Array();
+                var i;
+
+                // 接続
+                sock_local.onopen = function (e) {
+                    console.log('Socket 接続成功:work');
+                   
+                    var sid = localStorage.getItem("SID");
+                    //sock_local.send('R|' + sid + '|WORK');
+                     BBB_CheckOut2(path, fname, key, nextexist, bopen);
+                }
+
+                sock_local.addEventListener('message', function (e) {
+                    console.log(e.data);
+                    args = e.data.split('|');
+                    aore = args[0];
+                    rid = args[1];
+                    kind = args[2];
+                    paranum = args[3];
+
+
+
+                });
+                sock_local.onclose = function () {
+                    console.log('Socket 切断 at work');
+                }
+            }
+            
+            function SetUrl(url) {
+                console.log("SetUrl at work")
+
+                return;
+                var mname = localStorage.getItem('MACHINENAME');
+
+                document.getElementById("p_pc").value = mname;
+                document.getElementById("p_PcName").value = mname;
+                console.log(url);
+            }
+
+
+            $(function () {
+                var ps = cnfw_parseParam();
+                if (ps['cmd'] == 'UploadToDav') {
+                    var para1 = parent.currentFileParam;
+                    if (!para1) return;
+
+                    console.log("upload to dav :" + para1);
+                    var target = document.getElementById("link");
+                    var sid = localStorage.getItem("SID");
+                    target.href = 'connected:;command=CheckInatMain;value=' + para1 + ";id=" + sid;
+                    target.click(); //CheckInatMain cmd=UploadToDav
+                }
+            });
+
+			function ActivateCaller()
+			{
+			    try {
+			        var w = parent.workcaller;
+			        if (w != undefined) w.focus();
+                } catch (e) {
+                }
+			}
+			function SetCaller(w) {
+			    parent.workcaller = w;
+			}
+			function XYZ()
+            {
+            }
+            function ShowCnDialogForActiveWindow(winid, args, options) {
+                if ($("#p_frombom").val() == "true") {
+                    parent.showCnMessageWindow(winid, args, null, null, parent);
+                    return;
+                }
+
+                var w = parent;
+                if (parent.workcaller) w = parent.workcaller;
+                w.ShowCnDialog(winid, args, options);
+                ActivateCaller();
+                parent.workcaller = null;
+            }
+            function ShowAlertAndCheckout(winid, args, options, n) {
+				if (n <= parseInt($('#openCoFileLE').val()))
+					frm.p_CoOpen.value = "1";					// チェックアウト後に開く
+				else
+					frm.p_CoOpen.value = "0";					// チェックアウト後に開かない
+
+                if ($("#p_frombom").val() == "true") {
+                    parent.showCnMessageWindow(winid, args, null,
+                        function () {
+                            setTimeout(ShowCheckOutWin, 10);
+                        },
+                        parent);
+                    return;
+                }
+
+                parent.ShowCnDialog(winid, args, options, function() {   
+                    setTimeout(ShowCheckOutWin, 10);
+                });                
+            }
+			function CoFile(n)
+			{
+                console.log("CoFile at work");
+				if (n <= parseInt($('#openCoFileLE').val()))
+					frm.p_CoOpen.value = "1";					// チェックアウト後に開く
+				else
+					frm.p_CoOpen.value = "0";					// チェックアウト後に開かない
+
+				// モーダレスでチェックアウトウィンドウを開く
+				ShowCheckOutWin();
+			}
+			function OpenFile(n) 
+			{
+				cnfw_OpenFiles(0, window.parent, 0);
+			}
+			function GetFile(n) 
+			{
+				cnfw_GetFiles(0, window.parent, 0);
+			}
+			function OpenFileByFid(fid) 
+			{
+				cnfw_OpenFiles(fid, window.parent, 0);
+			}
+			function GetFileByFid(fid) 
+			{
+				cnfw_GetFiles(fid, window.parent, 0);
+			}
+			function FormSubmit()
+			{
+				document.getElementById("frm").submit();
+			}
+			function setpc()
+			{
+				//frm.p_pc.value = document.getElementById("SSS").computername;
+                frm.p_pc.value = localStorage.getItem('MACHINENAME');
+				return true;
+			}
+			function start()
+			{
+				if (!cnfw_CheckDirectAccess())
+					return;
+			}
+			//	チェックアウトウィンドウを開く
+			function ShowCheckOutWin()
+			{
+				if (IsEnabled('D004')) {
+					var w;
+					var pw = window.parent;
+					if (pw != undefined) {
+						try {
+							w = pw.coinfo_win;
+							if (w != undefined) {
+								if (!w.closed) {
+									w.document.location.href = "coinfo.aspx";
+									w.focus();
+									return false;
+								}
+							}
+						} catch (e) { }
+					}
+					var p = new Array();
+					var l = cnfw_loadWinPosition("coinfo", p);
+					w = window.open("coinfo.aspx", "_blank", "left=" + p[0] + ",top=" + p[1] + ",width=690,height=280,resizable=no,dependent=yes,status=yes", true);
+					if (pw != undefined)
+						pw.coinfo_win = w;
+				} else {
+					getContentWindow(workFrame).AutoExec();
+				}
+				
+				return false;
+			}
+
+			//	改訂番号のチェック結果を返す
+			function CheckRevNoCallback(res)
+			{
+				var w;
+				var pw = window.parent;
+				if (pw != undefined) {
+					w = pw.coinfo_win;
+					if (w == undefined) {
+						return false;
+					}
+				}
+
+				// 結果を返す
+				w.CheckRevNoCallback(res);
+				return;	
+			}
+			function ShowEE3Error() {
+			    try {
+			        window.parent.frames["main"].UpdateMessage("ライセンスモジュール(ee3.dll)が読み込めませんでした。");  //ライセンスモジュール(ee3.dll)が読み込めませんでした。
+			    } catch (e) { }
+			}
+			function RequestApproval()
+			{
+			    cnfw_RequestApproval(window.parent);
+			}
+			function CancelApprove()
+			{
+				if (IsEnabled("D006")) {
+					cnfw_CancelApproval(window.parent);
+				} else {
+					getContentWindow(workFrame).AutoExec();
+				}
+			}
+			function AckOverwrite(msg, title, nextexist)
+			{
+		        var p=new Array();
+		        var l=cnfw_loadWinPosition("ackoverwrite",p);
+			    var args = new Array();
+			    args[0] = msg;
+			    args[1] = title;
+			    args[2] = nextexist;
+			    args[3] = true;
+			    args[4] = window;
+			    if (IsEnabled("D001")) {
+			    	showModalDialog("ackoverwrite.aspx", args, "scroll:no;status:no;dialogLeft:" + p[0] + ";dialogTop:" + p[1] + ";dialogWidth:450px;dialogHeight:205px");
+			    	AutoOverwrite = args[1];
+			    } else {
+			    	AutoOverwrite = true;
+			    	args[0] = "yes";
+			    }
+		        return args[0];
+			}
+			function SetLink(mode)
+			{
+			    var a = document.getElementById("p_args").value.split("?");
+			    var w = window.parent.frames["main"];
+			    w.cnfw_SetLink(mode, a);
+			}
+			function ShowEasyAttrSearch(tid, fullpath) {
+			    var pw = window.parent;
+			    if (pw.location.pathname.toLowerCase().indexOf("default.aspx") == -1) return;
+			    try {
+                    pw.ResizeLeftPane(300);
+                    pw.SetSearchCondition("");
+                    var f = pw.frames["contents"];
+                    f.location.href = "Folders.aspx?pid=" + tid;
+                    pw.SetConditionVisible(true, true, true);
+                    var c = pw.frames["condition"];
+                    c.document.location.replace("vfcondition.aspx?mode=view&showcond=true");
+				    pw.g_keepconditionpane = true;
+				    pw.g_activepath = fullpath;
+				    pw.g_currentpath = fullpath;
+				    pw.frames["main"].document.location.replace("searching.aspx");
+			    } catch (e) {}			    
+			}
+            function RestartBomEdit(key, param) {
+			    if (key != "") {
+			        //  編集再開
+                    cnfw_ShowBom("0", "r", window.parent, 0, false, true, key);	  
+                    return;  
+			    }
+			    if (param == "RestartAll") {
+			        //  作業エリアに保存されたものがありません
+			        alert("編集再開可能な作業領域が検出できませんでした。 ");
+			        return;
+			    }
+			    try {
+			        //  ルートから起動
+                    var w = window.parent.frames["main"];
+			        w.ExecuteCommand("mnuTool-Bom-Root");			    
+			    } catch (e) { }
+			}
+			function RestartSelectedBomEdit(key, param) {
+			    if (key != "") {
+			        //  編集再開
+			        cnfw_ShowBom(param, "r", window.parent, 0, false, true, key);
+			        return;
+			    }
+			    if (param == "") {
+			        //  選択されたものは作業領域に保存されていません
+			        alert("選択されたものは作業領域に保存されていません ");
+			        return;
+			    }
+			    // 順展開
+		        var w = window.parent.frames["main"];
+		        w.ExecuteCommand("mnuTool-Bom-Child");			    
+			    return;
+			}
+		    function deleteDavFile(davname) {
+		        $.ajax({
+		            url: 'fwajaxproc.aspx',
+		            type: 'POST',
+		            async: false,
+		            data: {
+		                'cmd': 'DeleteDavFile',
+		                'davname': davname
+		            },
+		            success: function (data, status) {
+		            },
+		            dataType: 'json'
+		        });
+		    }
+		    function AddWindow(w, name) {
+		        try {
+		            var pw = window.parent;
+		            if (pw != undefined) {
+		                pw.AddWindow(w, name)
+		                return;
+		            }
+		        } catch (e) { }
+		        _w[name] = w;
+		    }
+		    function RefreshMain() {
+		        if (window.parent.location.pathname.toLowerCase().lastIndexOf("cndoclist.aspx") > 0) {
+		            window.parent.ExecuteCommand("mnuView-Refresh");
+		            return;
+		        }
+		        var w = window.parent.frames["main"];
+		        w.ExecuteCommand("mnuView-Refresh");
+		    }
+		    window.onunload = function () {
+		        for (var name in _w) {
+		            w = _w[name];
+		            if (w != undefined) {
+		                if (!w.closed)
+		                    w.close();
+		            }
+		        }
+		        return true;
+            }
+            function BBB_CheckOut2(path, fname, key, nextexist,bopen) {
+                multifname = multifname +  fname + "|";
+                multikey = multikey + key + "|";
+
+                if (nextexist) {// 受取ったfname, keyを記憶しておく
+                    //nothing to do
+                } else {
+                   
+                    var target = document.getElementById("link");
+                    var sid = localStorage.getItem("SID");
+                    var path2;
+                    var mid = localStorage.getItem("MACHINENAME");
+                    var cmdstr;
+                    path2 = path.replace(/\|/g, '\\'); //work.aspxで\を｜に変換しているので、逆変換で元の文字列に戻す。
+                    if (bopen == true){
+
+                        target.href = "connected:;command=checkout2;id=" + sid + ";fpath=" + path2 + ";value=" + multifname + ";key=" + multikey + ";open=true;lastpack=true;co=true";
+                        cmdstr = "|connected:;command=checkout2;id=" + sid + ";fpath=" + path2 + ";value=" + multifname + ";key=" + multikey + ";open=true;lastpack=true;co=true"
+                    }
+                    else{
+                        target.href = "connected:;command=checkout2;id=" + sid + ";fpath=" + path2 + ";value=" + multifname + ";key=" + multikey + ";open=false;lastpack=true;co=true";
+                        cmdstr = "|connected:;command=checkout2;id=" + sid + ";fpath=" + path2 + ";value=" + multifname + ";key=" + multikey + ";open=false;lastpack=true;co=true"
+                    }
+                    multifname = "";
+                    multikey = "";
+                    //if(sock_local == undefined)
+                    //      wsoc_local();
+                    //target.click(); //checkout2 for checkout --> FW9.6 WebSocket
+
+                    //setTimeout(waitdone,100,"C|" + mid + cmdstr);
+                    
+					sock_local.send("C|" + mid + cmdstr);
+                    document.getElementById("p_op").value = "DBCheckOut";
+					FormSubmit();
+                    
+                }
+            }
+            var donetime;
+            function waitdone(mym) {
+                
+                if(sock_local.readyState==1){
+                    
+                    clearTimeout(donetimer);
+                    sock_local.send(mym);
+                    
+                    return;
+                }
+                donetimer = setTimeout(waitdone,100,mym);
+                
+            }
+
+            function AddYen(path) {
+                if (path.slice(-1) == '\\'){
+                    return path;
+                } else {
+                    return path + '\\';
+                }
+            }
+            function BBB_CheckOut(fname, path, fid, bopen, fname2, opname, nextexist) {
+                var retval;
+                var fullpath;
+                var msg;
+                var title;
+                var mname = localStorage.getItem('MACHINENAME');
+
+                document.getElementById("p_pc").value = mname;
+                document.getElementById("p_PcName").value = mname;
+               //alert("here "+fname+ " --"+fid + " " + nextexist);
+                path = AddYen(path)
+                dstat = 0;
+                retval = 0;
+                
+
+                if (true){ //fname != "") { // fname == ""はタイトルファイルを意味する。最初は判定していたが、判定はDD3にまかせた。
+                    fullpath = path + fname2;
+                    var key = "";
+                    //window.parent.frames["dd3frame"].BBB_CheckOut2(path, fname, key, nextexist, bopen);
+                    if(nextexist)
+                        BBB_CheckOut2(path, fname, key, nextexist, bopen);
+                    else
+                        wsoc_local(path, fname, key, nextexist, bopen);
+               
+                }
+                if (retval == 0) {
+                    document.getElementById("CoSuccess").value = document.getElementById("CoSuccess").value + "," + fid;
+                    //if (bopen)
+                    //    BBB_Open(Path & fname2)
+                    
+                } else{
+                    document.getElementById("CoError").value = document.getElementById("CoError").value + "," + fid;
+                }
+                return 0;
+			}
+
+            function BBB_CheckIn() {
+                var mname = localStorage.getItem('MACHINENAME');
+
+                document.getElementById("p_pc").value = mname;
+                document.getElementById("p_PcName").value = mname;
+                cnfw_CheckInFiles(0, window.parent);
+            }
+            function IsFolderExists(path) {
+                return false;
+                //暫定：チェックしないといけない
+			}
+            function getContentWindow(f) {
+                var w;
+		        try{if((w=f.contentWindow)!=null)if((w.AutoExec)!=null)return w;}catch(ex){}
+		        try{if((f.AutoExec)!=null)return f;}catch(ex){}
+            }
+		//-->
+
+        </script>
+
+
+
+	</head>
+	<body id="BBB" onload="SetUrl(&#39;qKfVOCdTJIKBmU6wtLo/uvboq8FoiNshm98M3XwO4/8Fg4r81nnbqjS6rXKdiJPtxATriy2ggLJn7o/xozbIKVQJrO3iSQzrron5fMvfAbM=&#39;);">
+		<span id="DD3"></span>
+		<form name="frm" method="post" action="./work.aspx" id="frm" onsubmit="return setpc();">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="WMBZXwgm/T4XD9X+NltESYXRcvzGA53+PLHMB1FQUxO1SSf2hzsrTU7Z7QKvFsqXT65MhvMlVIqWPRw1sHBdWmlmNIkrbgZbESi+ClMxm4RhUt45zYSnJfjFzWB6AVCEJYBN0X+jD5rKJbo6vH0aUYGUP3gHvkIVXsfH8WaHIKR2lXVlultz7HNR/sEwaAdu+3PK4QoSAlEZxgIocsL5zphlFhAOSOTdnpbwphLjwk400VauT0jo1N9ct7bBsY+HrfXkIlQuVu+YyNoZbSGbgWXTyo2nww28WO+P4Pbh05DzT6kYrpwWCgl30NBqUA1Q" />
+
+<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="0993E7B4" />
+<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="1pkCjnaBwUmRmGdb/t4OnM8E0qQVh3uYo9WT+PGvzLWh+0xD0kLkrZykKHbUHY9jYYZCzJoG/ioe5M8v8XAR2r/oo5oREp4aKoE/P8E7sfDPdtDWv/ksD1ic3igXUZHWLL+wQ7AriNEVYyX6BL1QX6BLXs5dtvcl0y3gXixWZ2W5vG7MnzEd+vhnPbjzntHk+lCZAejVxtCi7+ETw5rgDitoyWxAtTGPP4BZOsJN4c1Go+JY3JNdiSj3Dl0ItTb/JT6Ic7b8esjgljLpvHojVuIgZ0dJVSCt6Q6EOzb0nEQumzkVJ/U/KDdmBo+2MGtXnx0/lBWXi1txRZyCJji1AjhOJNTWB4BpYCaMla91aaK5KiXkYk913t+5Mwy/7nVkzRisIX+QoD9bsGT9A4L8yWO+oT9xSCbCIOyfeIjp7+Qrkp+9WaWt/aHHTfgji/hCAmjZ2nT3i7jAtX+VyH6c/l+cehPIivPYF8eEzD+W0DsvE9LZ4E0fsWqDwa6/z+Aa" />
+			<input name="p_pc" type="hidden" id="p_pc" /> <input name="p_op" type="hidden" id="p_op" />
+			<input name="p_args" type="hidden" id="p_args" /> <input name="p_result" type="hidden" id="p_result" />
+			<input name="p_CoOpen" type="hidden" id="p_CoOpen" /> <input name="p_CoComment" type="hidden" id="p_CoComment" />
+			<input name="p_CoPath" type="hidden" id="p_CoPath" /> <input name="p_RevCheck" type="hidden" id="p_RevCheck" />
+			<input name="p_RevReason" type="hidden" id="p_RevReason" /> <input name="p_RevSummary" type="hidden" id="p_RevSummary" />
+			<input name="p_PcName" type="hidden" id="p_PcName" /> <input type="hidden" id="CoSuccess" name="CoSuccess"/>
+			<input id="CoError" type="hidden" name="CoError"/> <input name="p_RevNo" type="hidden" id="p_RevNo" />
+			<input name="p_FileName" type="hidden" id="p_FileName" />
+			<input name="p_CiError" type="hidden" id="p_CiError" />
+			<input name="cidel" type="hidden" id="cidel" value="0" />
+            <input name="p_markPath" type="hidden" id="p_markPath" />
+            <input name="p_fromvfcond" type="hidden" id="p_fromvfcond" />
+            <input name="p_frombom" type="hidden" id="p_frombom" />
+            <input name="openCoFileLE" type="hidden" id="openCoFileLE" value="1" />
+            <iframe src="blank.htm" id="workFrame" name="iframe"></iframe>
+           
+		</form>
+         <a id="link" href="connected:;command=upload;filepath=c:\\davtmp\\"></a>
+	</body>
+</html>

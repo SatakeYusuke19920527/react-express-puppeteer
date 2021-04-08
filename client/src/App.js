@@ -1,25 +1,30 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
-class App extends Component {
-  state = {users: []}
+const App = () => {
 
-  componentDidMount() {
-    fetch('/users')
+  const [data, setData] = useState([])
+
+  const handleClick = () => {
+    fetch('/users/about')
       .then(res => res.json())
-      .then(users => this.setState({ users }));
+      .then(users => setData(users))
   }
 
-  render() {
+  
     return (
       <div className="App">
         <h1>Users</h1>
-        {this.state.users.map(user =>
+        {data.map(user =>
           <div key={user.id}>{user.username}</div>
         )}
+        <button
+          onClick={handleClick}
+        >
+          button
+        </button>
       </div>
     );
-  }
 }
 
 export default App;
