@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const puppeteer = require('puppeteer')
+const tempFunc = require('../function/index')
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -16,17 +16,12 @@ router.get('/', function(req, res, next) {
 /* GET users listing. */
 router.get('/about', function (req, res, next) {
 	tempFunc()
-	res.json([{
-		id: 1,
-		username: "samsepi03"
-	}, {
-		id: 2,
-		username: "masalib4"
-	}]);
+	res.json([
+		{
+			id: 1,
+			username: "完了"
+		},
+	]);
 });
-
-const tempFunc = async () => {
-	console.log('[Info] ■■■ Puppeteer test Start ■■■');
-}
 
 module.exports = router;
